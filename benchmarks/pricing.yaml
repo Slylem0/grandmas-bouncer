@@ -1,0 +1,9 @@
+# On-demand Bedrock prices, USD per 1M tokens. Retrieved 2026-10-19 from third-party aggregators
+# because the AWS pricing page was not fetched; VERIFY against https://aws.amazon.com/bedrock/pricing/
+# before publishing. Sources:
+#   https://anotherwrapper.com/tools/llm-pricing/amazon-nova-2-lite/claude-sonnet-4-6
+#   https://pricepertoken.com/pricing-page/model/amazon-nova-2-lite-v1
+verified_against_aws: false
+models:
+  us.amazon.nova-2-lite-v1:0: {input: 0.30, output: 2.50}
+  us.anthropic.claude-sonnet-4-6: {input: 3.00, output: 15.00}

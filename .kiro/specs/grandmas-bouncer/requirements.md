@@ -46,7 +46,7 @@ sensitive tools in my own Strands agent in about three lines.
 #### Acceptance Criteria
 1. The guard SHALL subclass `strands.interventions.InterventionHandler` and implement `before_tool_call`.
 2. WHEN the proposed tool is not in `protected_tools` THEN the guard SHALL return `Proceed` without calling Decider.
-3. WHEN the tool is protected THEN the guard SHALL ask Decider, in one request, at least: `args_grounded_in_trusted` (noul) and `user_requested_action` (noul).
+3. WHEN the tool is protected THEN the guard SHALL ask Decider, in one request, at least: `destination_trusted` (noul) and `user_requested_action` (noul).
 4. The question texts, `criteria` and thresholds SHALL be configurable and have documented defaults.
 5. The guard SHALL set `on_error = "deny"` so failures are fail-closed.
 6. The guard SHALL append a structured record of every decision (tool, args, probabilities, verdict, latency, escalation used) to an in-memory log and notify optional listeners (for the UI).
