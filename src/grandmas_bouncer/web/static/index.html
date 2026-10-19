@@ -1,0 +1,174 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Grandma's Bouncer</title>
+<style>
+  :root {
+    --bg: #f6f3ee; --panel: #ffffff; --ink: #1f2328; --muted: #6a6f76; --line: #e4ded4;
+    --safe: #1f8a4c; --safe-bg: #e6f4ec; --block: #c6362f; --block-bg: #fbe9e7;
+    --warn: #b7791f; --warn-bg: #fdf3e1; --accent: #2f5d9e; --untrusted: #fff4e5;
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--bg); color: var(--ink);
+         font: 17px/1.45 system-ui, -apple-system, "Segoe UI", sans-serif; }
+  header { display: flex; align-items: center; gap: 24px; padding: 14px 24px;
+           border-bottom: 1px solid var(--line); background: var(--panel); }
+  header h1 { font-size: 22px; margin: 0; }
+  header .meta { color: var(--muted); font-size: 14px; }
+  .balance { margin-left: auto; text-align: right; }
+  .balance .eur { font-size: 30px; font-weight: 700; font-variant-numeric: tabular-nums; }
+  .balance .lbl { font-size: 13px; color: var(--muted); }
+  main { display: grid; grid-template-columns: 1fr 1.25fr 1.25fr; gap: 16px; padding: 16px 24px;
+         height: calc(100vh - 78px); }
+  section { background: var(--panel); border: 1px solid var(--line); border-radius: 12px;
+            display: flex; flex-direction: column; min-height: 0; }
+  section h2 { font-size: 15px; text-transform: uppercase; letter-spacing: .06em; color: var(--muted);
+               margin: 0; padding: 12px 16px; border-bottom: 1px solid var(--line); }
+  .scroll { overflow-y: auto; padding: 12px 16px; flex: 1; }
+  .mail { padding: 10px 12px; border-radius: 8px; border: 1px solid var(--line); margin-bottom: 8px;
+          cursor: pointer; background: var(--untrusted); }
+  .mail .from { font-size: 13px; color: var(--muted); }
+  .mail .subj { font-weight: 600; }
+  .mail .body { display: none; white-space: pre-wrap; font-size: 14px; margin-top: 6px; }
+  .mail.open .body { display: block; }
+  .tag { font-size: 11px; font-weight: 700; padding: 1px 6px; border-radius: 4px; }
+  .tag.untrusted { background: #f5d8a8; color: #7a4a00; }
+  .msg { margin-bottom: 12px; max-width: 92%; padding: 10px 14px; border-radius: 12px; white-space: pre-wrap; }
+  .msg.user { background: var(--accent); color: white; margin-left: auto; border-bottom-right-radius: 4px; }
+  .msg.assistant { background: #eef1f5; border-bottom-left-radius: 4px; }
+  .msg.thinking { color: var(--muted); font-style: italic; background: none; }
+  form { display: flex; gap: 8px; padding: 12px 16px; border-top: 1px solid var(--line); }
+  input[type=text] { flex: 1; font: inherit; padding: 10px 12px; border: 1px solid var(--line); border-radius: 8px; }
+  button { font: inherit; padding: 10px 16px; border-radius: 8px; border: 0; background: var(--accent);
+           color: white; cursor: pointer; }
+  button.ghost { background: transparent; color: var(--muted); border: 1px solid var(--line); }
+  button:disabled { opacity: .5; cursor: wait; }
+  .card { border-radius: 10px; padding: 12px 14px; margin-bottom: 12px; border: 2px solid; animation: pop .35s ease-out; }
+  @keyframes pop { from { transform: scale(.96); opacity: 0; } to { transform: none; opacity: 1; } }
+  .card.allow { border-color: var(--safe); background: var(--safe-bg); }
+  .card.block { border-color: var(--block); background: var(--block-bg); }
+  .card.escalate { border-color: var(--warn); background: var(--warn-bg); }
+  .card .top { display: flex; justify-content: space-between; align-items: baseline; }
+  .card .tool { font-weight: 700; font-family: ui-monospace, monospace; }
+  .verdict { font-weight: 800; letter-spacing: .04em; }
+  .allow .verdict { color: var(--safe); } .block .verdict { color: var(--block); } .escalate .verdict { color: var(--warn); }
+  .args { font-family: ui-monospace, monospace; font-size: 13px; margin: 6px 0 8px; word-break: break-all; }
+  .q { display: grid; grid-template-columns: 170px 1fr 48px; gap: 8px; align-items: center; font-size: 13px; margin: 3px 0; }
+  .bar { height: 10px; background: #00000014; border-radius: 5px; overflow: hidden; }
+  .bar i { display: block; height: 100%; border-radius: 5px; transition: width .6s ease; }
+  .lat { font-size: 13px; color: var(--muted); margin-top: 6px; }
+  .ledger { border-top: 1px solid var(--line); padding: 10px 16px; font-size: 14px; max-height: 30%; overflow-y: auto; }
+  .ledger div { font-family: ui-monospace, monospace; font-size: 13px; }
+  .empty { color: var(--muted); font-size: 14px; }
+  @media (max-width: 900px) { main { grid-template-columns: 1fr; height: auto; } section { min-height: 300px; } }
+</style>
+</head>
+<body>
+<header>
+  <div>
+    <h1>👵 Grandma's Bouncer</h1>
+    <div class="meta" id="meta">loading…</div>
+  </div>
+  <div class="balance"><div class="eur" id="balance">–</div><div class="lbl">Carmen's balance</div></div>
+</header>
+<main>
+  <section>
+    <h2>📬 Inbox <span class="tag untrusted">UNTRUSTED</span></h2>
+    <div class="scroll" id="inbox"></div>
+  </section>
+  <section>
+    <h2>💬 Carmen ↔ Assistant (Bedrock)</h2>
+    <div class="scroll" id="chat"></div>
+    <form id="form">
+      <input type="text" id="input" autocomplete="off"
+             value="Hola, soy Carmen. Revisa mi correo, paga lo que tenga pendiente y dime si hay algo importante, por favor.">
+      <button id="send">Send</button>
+      <button type="button" class="ghost" id="reset">Reset</button>
+    </form>
+  </section>
+  <section>
+    <h2>🛡️ The Bouncer (Decider 2B, local)</h2>
+    <div class="scroll" id="guard"><div class="empty">Every sensitive tool call is reviewed here before it runs.</div></div>
+    <div class="ledger"><strong>What actually happened</strong><div id="ledger" class="empty">nothing executed yet</div></div>
+  </section>
+</main>
+<script>
+const $ = (id) => document.getElementById(id);
+const esc = (s) => String(s).replace(/[&<>"]/g, (c) => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+const LABELS = { destination_trusted: "destination trusted?", user_requested_action: "user asked for it?" };
+const FINAL = { proceed: "ALLOWED", llm_allow: "ALLOWED (LLM)", deny: "BLOCKED", llm_block: "BLOCKED (LLM)", confirm: "ASK CARMEN" };
+let thinking = null;
+
+fetch("/config").then(r => r.json()).then(c => {
+  $("meta").textContent = `agent: ${c.agent_model} · decider on ${c.decider_device} · allow ≥ ${c.thresholds.allow}, block ≤ ${c.thresholds.block} · unsure → ${c.escalation === "llm" ? c.judge_model : c.escalation}`;
+});
+
+function addMsg(kind, text) {
+  const div = document.createElement("div");
+  div.className = `msg ${kind}`;
+  div.textContent = text;
+  $("chat").appendChild(div);
+  $("chat").scrollTop = $("chat").scrollHeight;
+  return div;
+}
+
+function renderWorld(w) {
+  $("balance").textContent = w.balance_eur.toLocaleString("es-ES", { style: "currency", currency: "EUR" });
+  $("inbox").innerHTML = w.inbox.map(m => `
+    <div class="mail" data-id="${m.id}"><div class="from">${esc(m.from)}</div>
+    <div class="subj">${esc(m.subject)}</div><div class="body"></div></div>`).join("");
+  document.querySelectorAll(".mail").forEach(el => el.onclick = async () => {
+    if (!el.classList.contains("open")) {
+      const m = await (await fetch(`/email/${el.dataset.id}`)).json();
+      el.querySelector(".body").textContent = m.body;
+    }
+    el.classList.toggle("open");
+  });
+  $("ledger").className = w.ledger.length ? "" : "empty";
+  $("ledger").innerHTML = w.ledger.length
+    ? w.ledger.map(e => `<div>✔ ${esc(e.kind)} ${esc(e.iban || e.to || e.name || "")} ${e.amount_eur ? esc(e.amount_eur + " EUR") : ""}</div>`).join("")
+    : "nothing executed yet";
+}
+
+function renderGuard(r) {
+  if ($("guard").querySelector(".empty")) $("guard").innerHTML = "";
+  const cls = ["proceed", "llm_allow"].includes(r.final_action) ? "allow" : r.final_action === "confirm" ? "escalate" : "block";
+  const qs = Object.entries(r.probabilities).map(([k, p]) => {
+    const color = p >= 0.5 ? "var(--safe)" : "var(--block)";
+    return `<div class="q"><span>${esc(LABELS[k] || k)}</span><div class="bar"><i style="width:0;background:${color}" data-w="${(p * 100).toFixed(1)}%"></i></div><b>${p.toFixed(2)}</b></div>`;
+  }).join("");
+  let lat = `⚡ ${r.decider_latency_ms.toFixed(0)} ms local decision`;
+  if (r.escalation_latency_ms != null) lat += ` · unsure → escalated to Bedrock judge (+${r.escalation_latency_ms.toFixed(0)} ms)`;
+  const card = document.createElement("div");
+  card.className = `card ${cls}`;
+  card.innerHTML = `<div class="top"><span class="tool">${esc(r.tool)}</span><span class="verdict">${FINAL[r.final_action]}</span></div>
+    <div class="args">${esc(JSON.stringify(r.arguments))}</div>${qs}<div class="lat">${lat}</div>`;
+  $("guard").appendChild(card);
+  requestAnimationFrame(() => card.querySelectorAll(".bar i").forEach(i => i.style.width = i.dataset.w));
+  $("guard").scrollTop = $("guard").scrollHeight;
+}
+
+const source = new EventSource("/events");
+source.onmessage = (e) => {
+  const ev = JSON.parse(e.data);
+  if (ev.kind === "reset") { $("chat").innerHTML = ""; $("guard").innerHTML = '<div class="empty">Every sensitive tool call is reviewed here before it runs.</div>'; }
+  if (ev.kind === "world") renderWorld(ev.data);
+  if (ev.kind === "guard") renderGuard(ev.data);
+  if (ev.kind === "user") { addMsg("user", ev.data); thinking = addMsg("thinking", "assistant is working…"); }
+  if (ev.kind === "assistant") { if (thinking) thinking.remove(); addMsg("assistant", ev.data); }
+};
+
+$("form").onsubmit = async (e) => {
+  e.preventDefault();
+  const message = $("input").value.trim();
+  if (!message) return;
+  $("send").disabled = true; $("input").value = "";
+  try { await fetch("/chat", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ message }) }); }
+  finally { $("send").disabled = false; }
+};
+$("reset").onclick = () => fetch("/reset", { method: "POST" });
+</script>
+</body>
+</html>
