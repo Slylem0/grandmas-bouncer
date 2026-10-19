@@ -23,6 +23,7 @@ from .cases import load_cases, state_for
 RESULTS = Path(__file__).resolve().parent / "results"
 LLM_SYSTEMS = {
     "llm-nova": "us.amazon.nova-2-lite-v1:0",
+    "llm-nova-pro": "us.amazon.nova-pro-v1:0",
     "llm-sonnet": "us.anthropic.claude-sonnet-4-6",
 }
 

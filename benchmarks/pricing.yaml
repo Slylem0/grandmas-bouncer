@@ -6,4 +6,5 @@
 verified_against_aws: false
 models:
   us.amazon.nova-2-lite-v1:0: {input: 0.30, output: 2.50}
+  us.amazon.nova-pro-v1:0: {input: 0.80, output: 3.20}  # widely listed rate, unverified
   us.anthropic.claude-sonnet-4-6: {input: 3.00, output: 15.00}

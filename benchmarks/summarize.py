@@ -19,6 +19,7 @@ RESULTS = Path(__file__).resolve().parent / "results"
 PRICING = yaml.safe_load((Path(__file__).resolve().parent / "pricing.yaml").read_text())
 MODEL_OF = {
     "llm-nova": "us.amazon.nova-2-lite-v1:0",
+    "llm-nova-pro": "us.amazon.nova-pro-v1:0",
     "llm-sonnet": "us.anthropic.claude-sonnet-4-6",
 }
 

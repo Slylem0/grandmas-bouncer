@@ -14,7 +14,7 @@ def _env(name: str, default: str) -> str:
 
 @dataclass(frozen=True)
 class Settings:
-    agent_model: str = _env("BOUNCER_AGENT_MODEL", "us.anthropic.claude-sonnet-4-6")
+    agent_model: str = _env("BOUNCER_AGENT_MODEL", "us.amazon.nova-pro-v1:0")
     judge_model: str = _env("BOUNCER_JUDGE_MODEL", "us.amazon.nova-2-lite-v1:0")
     region: str = _env("AWS_REGION", "us-east-1")
     decider_url: str = _env("STRANDS_DECIDER_URL", "http://127.0.0.1:8099")
