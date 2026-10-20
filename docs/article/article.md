@@ -46,16 +46,22 @@ request that came from an email, not from her.
 
 ![The demo UI after a real run: the scam email is flagged, the add_payee call is blocked in 401 ms, Carmen's daughter gets a warning, and the real bill is then paid to the saved account](https://raw.githubusercontent.com/Slylem0/grandmas-bouncer/main/docs/img/demo-blocked-then-paid.png)
 
-The interface is built for a 72-year-old, not for an engineer: large text (with an "A+" button), big
-buttons for the common tasks ("check my email and pay what's pending", "pay the electricity to the
-usual account"), and a green receipt in plain words for every payment. When the Bouncer blocks
-something, three things happen that do not depend on the agent: Carmen sees a calm notice ("an
-email asked me to do this; I didn't, your money is fine, I've told Lucía"), the email gets a red
-"possible scam" badge, and her daughter Lucía gets a message saying what was attempted, which email
-asked for it, that no money moved, and what to do next. The app sends that alert itself, not
-through the agent's tools, so an injected email cannot suppress it. Then, when Carmen asks to pay
-the bill to the account she already had saved, Decider allows it and the money goes where it
-should.
+The interface is built for a 72-year-old, not for an engineer. Carmen's screen follows common
+guidance for older users: one main button ("check my email and pay"), large text and large targets,
+plain words, no account numbers, and big **Sí / No** buttons only when the assistant asks a yes/no
+question. Every payment that really ran gets a green receipt; the receipts come from the bank
+ledger, not from the model's text, so the assistant can't claim a payment that didn't happen.
+
+When the Bouncer blocks something, three things happen that don't depend on the agent: Carmen sees
+one calm notice ("an email asked to change Luz Clara's account; I didn't do it; your money is fine;
+I've told Lucía"), the email is flagged as a possible scam, and her daughter Lucía gets a message
+saying which email asked for what, that no money moved, and what to do. The app sends that alert
+itself, not through the agent's tools, so an injected email can't suppress it. The assistant then
+offers to pay the bill to the account Carmen already had saved; she taps "Sí", Decider allows it,
+and the money goes where it should. The inbox, Lucía's phone and the Bouncer's probabilities sit in
+a separate demo view for the audience, outside Carmen's screen.
+
+![Carmen's screen after a block: one calm notice and two big answer buttons](https://raw.githubusercontent.com/Slylem0/grandmas-bouncer/main/docs/img/carmen-view-blocked.png)
 
 ## The decision I handed to Decider 2B
 

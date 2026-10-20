@@ -69,5 +69,5 @@ def test_family_alert_names_the_scam_email():
     )
     alert = family_alert(record, world)
     assert alert["email_id"] == 3 and "luzclara-pagos" in alert["text"]
-    assert "Lucía" in alert["owner_text"]
+    assert "Lucía" in alert["owner_text"] and "XX" not in alert["owner_text"]
     assert eur(1234.5) == "1.234,50 €"

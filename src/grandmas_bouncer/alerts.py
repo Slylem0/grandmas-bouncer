@@ -46,20 +46,25 @@ def describe(record: GuardRecord) -> tuple[str, str]:
     return record.tool, "?"
 
 
+def plain(record: GuardRecord) -> str:
+    """The attempt in the fewest, simplest words, for Carmen."""
+    if record.tool == "transfer_money":
+        return "enviar tu dinero a una cuenta desconocida"
+    if record.tool == "add_payee":
+        return f"cambiar la cuenta de {record.arguments.get('name', 'un pago')}"
+    return "enviar tus datos a un desconocido"
+
+
 def family_alert(record: GuardRecord, world: World) -> dict[str, Any]:
     owner = world.owner["name"].split()[0]
     attempt, destination = describe(record)
     email = source_email(world, destination)
-    origin = (
-        f"un correo de {email['from']} («{email['subject']}»)" if email else "un correo, no ella"
-    )
+    origin = f"Un correo de {email['from']}" if email else "Un correo"
     text = (
-        f"He bloqueado un intento de estafa a {owner}.\n"
-        f"• Qué pedía: {attempt} ({destination}).\n"
-        f"• Quién lo pedía: {origin}.\n"
-        "• Resultado: no se ha movido dinero. Su cuenta está bien.\n\n"
-        f"👉 Qué hacer: llama a {owner} con calma, dile que borre ese correo y que nunca dé "
-        "datos del banco por teléfono ni por email."
+        f"He parado una estafa a {owner}.\n"
+        f"{origin} pedía {attempt} ({destination}).\n"
+        "No se ha movido dinero.\n\n"
+        f"👉 Llama a {owner} con calma y dile que borre ese correo."
     )
     alert = {
         "ts": time.time(),
@@ -71,10 +76,10 @@ def family_alert(record: GuardRecord, world: World) -> dict[str, Any]:
         "email_subject": email["subject"] if email else None,
         "email_id": email["id"] if email else None,
         "text": text,
-        # What Carmen herself sees: short, calm, no jargon.
+        # What Carmen herself sees: short, calm, no account numbers or jargon.
         "owner_text": (
-            f"Un correo pedía {attempt}. No lo he hecho: parecía una estafa. "
-            "Tu dinero está bien. Ya he avisado a Lucía."
+            f"Un correo pedía {plain(record)}. No lo he hecho. Tu dinero está bien. "
+            "No contestes a ese correo. Ya se lo he dicho a Lucía."
         ),
     }
     world.alerts.append(alert)

@@ -12,8 +12,11 @@ asked for, not Carmen.
 
 ![A scam email tries to save the scammer's account: the Bouncer blocks it in 401 ms, Lucía gets a warning, and the real bill is then paid to the saved account](docs/img/demo-blocked-then-paid.png)
 
-*Real run (Nova 2 Lite agent, Decider 2B on an NVIDIA L4): the scam email's "new account" is blocked,
-Carmen's daughter gets a warning, and the real electricity bill is then paid to the saved account.*
+*Real run, demo view (Nova 2 Lite agent, Decider 2B on an NVIDIA L4): the scam email's "new account"
+is blocked, Carmen's daughter gets a warning, Carmen taps "Sí" and the real bill is paid to the
+saved account. Carmen herself only sees the simple middle screen
+([desktop](docs/img/carmen-view-blocked.png), [mobile](docs/img/carmen-view-mobile.png)); open
+`http://127.0.0.1:8000/?demo` for the panels around it.*
 
 Built for the AWS Agent Experience Hackathon. Pattern: **#guardrails**. Tag: **#strands-decider-2b**.
 
@@ -99,7 +102,7 @@ access in `us-east-1` (Nova 2 Lite; optional Claude Sonnet 4.6), and ~10 GB RAM 
 ```bash
 uv sync --extra decider
 scripts/serve_decider.sh                         # Decider 2B on :8099 (GPU if it fits, else CPU)
-uv run python -m grandmas_bouncer.web            # demo UI on http://127.0.0.1:8000
+uv run python -m grandmas_bouncer.web            # Carmen: http://127.0.0.1:8000 · demo panels: /?demo
 uv run python -m grandmas_bouncer.demo_cli       # or the terminal demo
 ```
 

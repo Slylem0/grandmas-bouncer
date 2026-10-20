@@ -5,181 +5,194 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Grandma's Bouncer</title>
 <style>
+  /*
+    Carmen's screen follows guidance for older users: one main action, large text (22px+) and
+    targets (56px+), high contrast, plain words with icon + label, no jargon, nothing that
+    disappears on a timer. Everything technical lives in the optional demo panels around it.
+  */
   :root {
-    --fs: 19px;
-    --bg: #f4efe7; --panel: #ffffff; --ink: #1d2126; --muted: #5d636b; --line: #e2dacd;
-    --safe: #17804a; --safe-bg: #e3f3ea; --block: #c0322b; --block-bg: #fce8e6;
-    --warn: #a86b12; --warn-bg: #fdf2dd; --accent: #2a5594; --accent-bg: #e9f0fa;
-    --untrusted: #fffaf2; --wa: #075e54; --wa-bg: #e5ddd5; --wa-bubble: #ffffff;
+    --bg: #f4efe7; --panel: #ffffff; --ink: #1a1d21; --muted: #555b63; --line: #ddd4c6;
+    --safe: #146c3e; --safe-bg: #e3f3ea; --block: #b42a23; --block-bg: #fce8e6;
+    --warn: #96600f; --warn-bg: #fdf2dd; --accent: #1f4f8f; --accent-bg: #e9f0fa;
+    --wa: #075e54; --wa-bg: #e5ddd5;
   }
-  body.big { --fs: 23px; }
   * { box-sizing: border-box; }
+  html, body { height: 100%; }
   body { margin: 0; background: var(--bg); color: var(--ink);
-         font: var(--fs)/1.45 system-ui, -apple-system, "Segoe UI", sans-serif; }
+         font: 18px/1.45 system-ui, -apple-system, "Segoe UI", sans-serif; }
   button { font: inherit; cursor: pointer; }
+  button:disabled { opacity: .55; cursor: wait; }
+  :focus-visible { outline: 4px solid #f2b600; outline-offset: 2px; }
 
-  header { display: flex; align-items: center; gap: 20px; padding: 12px 24px;
-           background: var(--panel); border-bottom: 1px solid var(--line); }
-  header h1 { font-size: 1.35em; margin: 0; }
-  header .sub { color: var(--muted); font-size: .72em; }
-  .balance { margin-left: auto; text-align: right; background: var(--safe-bg); border-radius: 14px;
-             padding: 6px 18px; border: 2px solid #bfe3cd; }
-  .balance .lbl { font-size: .72em; color: var(--safe); font-weight: 700; }
-  .balance .eur { font-size: 1.7em; font-weight: 800; font-variant-numeric: tabular-nums; line-height: 1.1; }
-  .tools { display: flex; gap: 8px; }
-  .small { font-size: .72em; padding: 8px 12px; border-radius: 10px; border: 1px solid var(--line);
-           background: var(--panel); color: var(--muted); }
+  .stage { height: 100%; display: flex; justify-content: center; gap: 16px; padding: 16px; }
+  .demo-only { display: none; }
+  body.demo .demo-only { display: flex; }
+  body.demo .stage { height: calc(100% - 44px); }
 
-  main { display: grid; grid-template-columns: 1fr 1.45fr 1.15fr; gap: 16px; padding: 16px 24px;
-         height: calc(100vh - 84px); }
-  .col { display: flex; flex-direction: column; gap: 16px; min-height: 0; }
-  section { background: var(--panel); border: 1px solid var(--line); border-radius: 16px;
-            display: flex; flex-direction: column; min-height: 0; overflow: hidden; }
-  section h2 { font-size: .9em; margin: 0; padding: 12px 16px; border-bottom: 1px solid var(--line);
-               display: flex; align-items: center; gap: 8px; }
-  section h2 .hint { margin-left: auto; font-weight: 400; color: var(--muted); font-size: .8em; }
-  .scroll { overflow-y: auto; padding: 12px 16px; flex: 1; }
-  .empty { color: var(--muted); font-size: .8em; }
-
-  /* Inbox */
-  .inbox { flex: 1.1; }
-  .mail { padding: 10px 12px; border-radius: 12px; border: 1px solid var(--line); margin-bottom: 8px;
-          cursor: pointer; background: var(--untrusted); transition: background .3s; }
-  .mail .from { font-size: .72em; color: var(--muted); word-break: break-all; }
-  .mail .subj { font-weight: 650; font-size: .88em; }
-  .mail .body { display: none; white-space: pre-wrap; font-size: .76em; margin-top: 6px; }
-  .mail.open .body { display: block; }
-  .mail.scam { background: var(--block-bg); border: 2px solid var(--block); }
-  .badge { display: none; font-size: .68em; font-weight: 800; color: #fff; background: var(--block);
-           border-radius: 6px; padding: 1px 8px; margin-bottom: 4px; }
-  .mail.scam .badge { display: inline-block; }
-  .tag { font-size: .62em; font-weight: 700; padding: 2px 7px; border-radius: 5px;
-         background: #f3dcb2; color: #6e4300; }
-
-  /* Lucía's phone */
-  .phone { flex: 1; background: var(--wa-bg); border: 6px solid #1d2126; border-radius: 26px; }
-  .phone h2 { background: var(--wa); color: #fff; border: 0; }
-  .phone h2 .hint { color: #cfe6e2; }
-  .phone .scroll { padding: 10px 12px; }
-  .wa { background: var(--wa-bubble); border-radius: 4px 12px 12px 12px; padding: 8px 12px;
-        margin-bottom: 10px; font-size: .74em; box-shadow: 0 1px 1px #0002; animation: pop .4s ease-out;
-        white-space: pre-wrap; }
-  .wa .who { color: var(--wa); font-weight: 700; font-size: .92em; }
-  .wa .head { color: var(--block); font-weight: 800; }
-  .wa .time { text-align: right; color: var(--muted); font-size: .8em; }
-  .phone .empty { text-align: center; margin-top: 20px; }
-
-  /* Chat */
-  .chat .scroll { padding: 16px; }
-  .msg { margin-bottom: 14px; max-width: 88%; padding: 12px 16px; border-radius: 16px; white-space: pre-wrap; }
+  /* ---------- Carmen's screen ---------- */
+  .carmen { width: 100%; max-width: 720px; display: flex; flex-direction: column; min-height: 0;
+            background: var(--panel); border-radius: 24px; border: 1px solid var(--line);
+            font-size: 22px; overflow: hidden; }
+  .carmen header { padding: 20px 28px 16px; border-bottom: 1px solid var(--line); }
+  .carmen h1 { margin: 0; font-size: 1.45em; }
+  .money { margin-top: 4px; color: var(--muted); }
+  .money b { color: var(--ink); font-size: 1.15em; font-variant-numeric: tabular-nums; }
+  #chat { flex: 1; overflow-y: auto; padding: 20px 28px; }
+  .msg { margin-bottom: 16px; max-width: 90%; padding: 14px 18px; border-radius: 18px; white-space: pre-wrap; }
   .msg.user { background: var(--accent); color: #fff; margin-left: auto; border-bottom-right-radius: 4px; }
   .msg.assistant { background: #eef1f5; border-bottom-left-radius: 4px; }
-  .msg.thinking { color: var(--muted); background: none; font-style: italic; }
+  .msg.thinking { background: none; color: var(--muted); }
   .dots::after { content: ""; animation: dots 1.2s steps(4) infinite; }
   @keyframes dots { 0% { content: ""; } 25% { content: "."; } 50% { content: ".."; } 75% { content: "..."; } }
-  .notice { border-radius: 14px; padding: 12px 16px; margin: 4px 0 14px; display: flex; gap: 12px;
+  .notice { border-radius: 18px; padding: 16px 20px; margin: 0 0 16px; display: flex; gap: 14px;
             align-items: flex-start; animation: pop .4s ease-out; }
-  .notice .ico { font-size: 1.6em; line-height: 1; }
+  .notice .ico { font-size: 1.5em; line-height: 1.1; }
   .notice b { display: block; }
-  .notice.shield { background: var(--block-bg); border: 2px solid var(--block); }
-  .notice.paid { background: var(--safe-bg); border: 2px solid var(--safe); }
-  .quick { display: flex; flex-wrap: wrap; gap: 8px; padding: 12px 16px 0; border-top: 1px solid var(--line); }
-  .quick button { border: 2px solid var(--accent); background: var(--accent-bg); color: var(--accent);
-                  border-radius: 999px; padding: 8px 16px; font-size: .85em; font-weight: 600; }
-  .quick button:hover { background: var(--accent); color: #fff; }
-  form { display: flex; gap: 10px; padding: 12px 16px 16px; }
-  input[type=text] { flex: 1; font: inherit; padding: 12px 14px; border: 2px solid var(--line);
-                     border-radius: 12px; min-width: 0; }
-  input[type=text]:focus { outline: none; border-color: var(--accent); }
-  .send { padding: 12px 22px; border-radius: 12px; border: 0; background: var(--accent); color: #fff;
-          font-weight: 700; }
-  button:disabled { opacity: .5; cursor: wait; }
+  .notice.shield { background: var(--block-bg); border: 3px solid var(--block); }
+  .notice.paid { background: var(--safe-bg); border: 3px solid var(--safe); }
+  .controls { padding: 16px 28px 24px; border-top: 1px solid var(--line); display: grid; gap: 12px;
+              grid-template-columns: minmax(0, 1fr); }
+  .answers { display: none; gap: 12px; }
+  .answers.show { display: grid; grid-template-columns: 1fr 1fr; }
+  .answers button { min-height: 68px; border-radius: 18px; font-size: 1.1em; font-weight: 800; }
+  .answers .yes { background: var(--safe); color: #fff; border: 0; }
+  .answers .no { background: var(--panel); color: var(--ink); border: 3px solid #b9ae9c; }
+  .primary { min-height: 68px; border: 0; border-radius: 18px; background: var(--accent); color: #fff;
+             font-size: 1.05em; font-weight: 700; }
+  .write { display: flex; gap: 10px; }
+  .write input { flex: 1; min-width: 0; min-height: 60px; font: inherit; padding: 0 18px;
+                 border: 2px solid #b9ae9c; border-radius: 16px; }
+  .write button { min-height: 60px; padding: 0 22px; border-radius: 16px; font-weight: 700;
+                  border: 2px solid var(--accent); background: var(--panel); color: var(--accent); }
+  @keyframes pop { from { transform: scale(.97); opacity: 0; } to { transform: none; opacity: 1; } }
 
-  /* Bouncer (technical view for the demo) */
-  .bouncer { flex: 1; }
-  .card { border-radius: 12px; padding: 10px 12px; margin-bottom: 12px; border: 2px solid; animation: pop .35s ease-out;
-          font-size: .78em; }
-  @keyframes pop { from { transform: scale(.96); opacity: 0; } to { transform: none; opacity: 1; } }
+  /* ---------- Demo panels (for the audience, not for Carmen) ---------- */
+  .demo-bar { height: 44px; align-items: center; gap: 12px; padding: 0 20px; background: #1d2126; color: #dfe3e8;
+              font-size: 14px; }
+  .demo-bar b { color: #fff; }
+  .demo-bar .meta { color: #9aa3ad; font-size: 12px; flex: 1; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .demo-bar button { font-size: 13px; padding: 5px 12px; border-radius: 8px; border: 1px solid #4a525c;
+                     background: transparent; color: #dfe3e8; }
+  .side { width: 360px; flex-shrink: 0; flex-direction: column; gap: 16px; min-height: 0; font-size: 15px; }
+  .side.right { width: 400px; }
+  .box { background: var(--panel); border: 1px solid var(--line); border-radius: 16px; display: flex;
+         flex-direction: column; min-height: 0; overflow: hidden; flex: 1; }
+  .box h2 { font-size: 14px; margin: 0; padding: 10px 14px; border-bottom: 1px solid var(--line);
+            display: flex; gap: 8px; align-items: center; }
+  .box h2 small { margin-left: auto; font-weight: 400; color: var(--muted); }
+  .box .scroll { overflow-y: auto; padding: 10px 14px; flex: 1; }
+  .empty { color: var(--muted); font-size: 14px; }
+  .tag { font-size: 11px; font-weight: 700; padding: 1px 6px; border-radius: 4px; background: #f3dcb2; color: #6e4300; }
+  .mail { padding: 8px 10px; border-radius: 10px; border: 1px solid var(--line); margin-bottom: 8px;
+          cursor: pointer; background: #fffaf2; }
+  .mail .from { font-size: 12px; color: var(--muted); word-break: break-all; }
+  .mail .subj { font-weight: 650; }
+  .mail .body { display: none; white-space: pre-wrap; font-size: 13px; margin-top: 6px; }
+  .mail.open .body { display: block; }
+  .mail.scam { background: var(--block-bg); border: 2px solid var(--block); }
+  .badge { display: none; font-size: 11px; font-weight: 800; color: #fff; background: var(--block);
+           border-radius: 5px; padding: 1px 7px; }
+  .mail.scam .badge { display: inline-block; }
+  .phone { background: var(--wa-bg); border: 6px solid #1d2126; border-radius: 24px; }
+  .phone h2 { background: var(--wa); color: #fff; border: 0; }
+  .phone h2 small { color: #cfe6e2; }
+  .wa { background: #fff; border-radius: 4px 12px 12px 12px; padding: 8px 12px; margin-bottom: 10px;
+        font-size: 14px; box-shadow: 0 1px 1px #0002; white-space: pre-wrap; animation: pop .4s ease-out; }
+  .wa .who { color: var(--wa); font-weight: 700; font-size: 13px; }
+  .wa .head { color: var(--block); font-weight: 800; }
+  .wa .time { text-align: right; color: var(--muted); font-size: 12px; }
+  .card { border-radius: 12px; padding: 10px 12px; margin-bottom: 12px; border: 2px solid; animation: pop .35s ease-out; }
   .card.allow { border-color: var(--safe); background: var(--safe-bg); }
   .card.block { border-color: var(--block); background: var(--block-bg); }
   .card.escalate { border-color: var(--warn); background: var(--warn-bg); }
   .card.pending { border-color: var(--accent); background: var(--accent-bg); }
-  .card .top { display: flex; justify-content: space-between; align-items: baseline; gap: 8px; }
+  .card .top { display: flex; justify-content: space-between; gap: 8px; }
   .card .tool { font-weight: 700; font-family: ui-monospace, monospace; }
   .verdict { font-weight: 800; letter-spacing: .04em; white-space: nowrap; }
   .allow .verdict { color: var(--safe); } .block .verdict { color: var(--block); }
   .escalate .verdict { color: var(--warn); } .pending .verdict { color: var(--accent); }
   .why { font-weight: 600; margin: 4px 0; }
-  .args { font-family: ui-monospace, monospace; font-size: .88em; margin: 4px 0 8px; word-break: break-all; color: var(--muted); }
-  .q { display: grid; grid-template-columns: 9.5em 1fr 3em; gap: 8px; align-items: center; margin: 3px 0; }
+  .args { font-family: ui-monospace, monospace; font-size: 12px; margin: 4px 0 8px; word-break: break-all; color: var(--muted); }
+  .q { display: grid; grid-template-columns: 10em 1fr 3em; gap: 8px; align-items: center; margin: 3px 0; font-size: 14px; }
   .bar { height: 10px; background: #00000014; border-radius: 5px; overflow: hidden; }
   .bar i { display: block; height: 100%; border-radius: 5px; transition: width .6s ease; }
-  .lat { color: var(--muted); margin-top: 6px; }
+  .lat { color: var(--muted); margin-top: 6px; font-size: 14px; }
   .spinner { display: inline-block; width: 13px; height: 13px; border: 2px solid var(--accent);
              border-right-color: transparent; border-radius: 50%; animation: spin .8s linear infinite;
              vertical-align: -2px; margin-right: 6px; }
   @keyframes spin { to { transform: rotate(360deg); } }
-  .ledger { border-top: 1px solid var(--line); padding: 10px 16px; font-size: .74em; max-height: 34%; overflow-y: auto; }
-  .ledger div { margin-top: 2px; }
-  .meta { font-size: .62em; color: var(--muted); padding: 8px 16px; border-top: 1px solid var(--line); }
+  .ledger { border-top: 1px solid var(--line); padding: 8px 14px; font-size: 14px; max-height: 30%; overflow-y: auto; }
 
-  @media (max-width: 1000px) {
-    main { grid-template-columns: 1fr; height: auto; padding: 12px 16px; }
-    section { min-height: 260px; }
-    .chat { order: -1; min-height: 70vh; }
-    header { flex-wrap: wrap; padding: 12px 16px; }
+  .demo-toggle { position: fixed; right: 12px; bottom: 10px; font-size: 13px; color: var(--muted);
+                 background: none; border: 0; text-decoration: underline; }
+  body.demo .demo-toggle { display: none; }
+
+  @media (max-width: 1100px) {
+    body.demo .stage { flex-direction: column; height: auto; }
+    .side, .side.right { width: 100%; }
+    .box { min-height: 260px; }
+    .carmen { order: -1; min-height: 85vh; max-width: none; }
+  }
+  @media (max-width: 600px) {
+    .stage { padding: 0; }
+    .carmen { border-radius: 0; border: 0; font-size: 20px; }
+    .carmen header, #chat, .controls { padding-left: 16px; padding-right: 16px; }
+    .write button { padding: 0 16px; }
+    .demo-toggle { display: none; }
   }
 </style>
 </head>
 <body>
-<header>
-  <div>
-    <h1>👵 El asistente de Carmen</h1>
-    <div class="sub">Grandma's Bouncer · Strands agent on Amazon Bedrock, guarded by Strands Decider 2B</div>
-  </div>
-  <div class="balance"><div class="lbl">💶 Tu dinero en el banco</div><div class="eur" id="balance">–</div></div>
-  <div class="tools">
-    <button class="small" id="bigger" title="Letra más grande">A+ Letra</button>
-    <button class="small" id="reset" title="Volver a empezar la demo">🔄 Reiniciar</button>
-  </div>
-</header>
-<main>
-  <div class="col">
-    <section class="inbox">
-      <h2>📬 Tu correo <span class="tag">untrusted · no fiable</span><span class="hint">toca para leer</span></h2>
+<div class="demo-bar demo-only">
+  <b>🛡️ Grandma's Bouncer · live demo</b>
+  <span class="meta" id="meta">loading…</span>
+  <button id="reset">Reset</button>
+  <button id="exit-demo">Carmen only</button>
+</div>
+
+<div class="stage">
+  <aside class="side demo-only">
+    <div class="box">
+      <h2>📬 Carmen's inbox <span class="tag">UNTRUSTED</span><small>click to read</small></h2>
       <div class="scroll" id="inbox"></div>
-    </section>
-    <section class="phone">
-      <h2>📱 Móvil de Lucía (hija)<span class="hint">avisos de seguridad</span></h2>
-      <div class="scroll" id="phone"><div class="empty">Si alguien intenta engañar a Carmen,<br>Lucía recibe un aviso aquí.</div></div>
-    </section>
-  </div>
-
-  <section class="chat">
-    <h2>💬 Habla con tu asistente<span class="hint">escribe o toca un botón</span></h2>
-    <div class="scroll" id="chat">
-      <div class="msg assistant">¡Hola, Carmen! 😊 Soy tu asistente. Puedo leer tu correo, pagar tus facturas y escribir a tu familia.
-Toca uno de los botones de abajo o escríbeme lo que necesites.</div>
     </div>
-    <div class="quick" id="quick">
-      <button data-msg="Hola, soy Carmen. Revisa mi correo, paga lo que tenga pendiente y dime si hay algo importante, por favor.">📬 Revisa mi correo y paga lo pendiente</button>
-      <button data-msg="Paga la factura de la luz de octubre a la cuenta de Luz Clara que tengo guardada.">💡 Paga la luz a la cuenta de siempre</button>
-      <button data-msg="Responde a Mateo que muchas gracias y que el domingo os espero a comer.">🎂 Contesta a Mateo</button>
-      <button data-msg="¿Cuánto dinero tengo en el banco?">💶 ¿Cuánto dinero tengo?</button>
+    <div class="box phone">
+      <h2>📱 Móvil de Lucía (hija)<small>WhatsApp</small></h2>
+      <div class="scroll" id="phone"><div class="empty">Family alerts appear here.</div></div>
     </div>
-    <form id="form">
-      <input type="text" id="input" autocomplete="off" placeholder="Escribe aquí lo que necesitas…">
-      <button class="send" id="send">Enviar ➤</button>
-    </form>
-  </section>
+  </aside>
 
-  <section class="bouncer">
-    <h2>🛡️ The Bouncer: behind the scenes<span class="hint">Decider 2B</span></h2>
-    <div class="scroll" id="guard"><div class="empty">Before the assistant moves money, saves an account or sends an email, the Bouncer checks it here.</div></div>
-    <div class="ledger"><b>What actually happened</b><div id="ledger" class="empty">nothing executed yet</div></div>
-    <div class="meta" id="meta">loading…</div>
-  </section>
-</main>
+  <main class="carmen">
+    <header>
+      <h1>Hola, Carmen 👋</h1>
+      <div class="money">Tienes <b id="balance">–</b> en el banco</div>
+    </header>
+    <div id="chat">
+      <div class="msg assistant">Soy tu asistente. Puedo mirar tu correo y pagar tus facturas por ti.</div>
+    </div>
+    <div class="controls">
+      <div class="answers" id="answers">
+        <button class="yes" data-msg="Sí">✔ Sí</button>
+        <button class="no" data-msg="No">✕ No</button>
+      </div>
+      <button class="primary" id="main" data-msg="Hola, soy Carmen. Revisa mi correo, paga lo que tenga pendiente y dime si hay algo importante, por favor.">📬 Revisar mi correo y pagar</button>
+      <form class="write" id="form">
+        <input type="text" id="input" autocomplete="off" aria-label="Escribe tu mensaje" placeholder="O escribe aquí…">
+        <button id="send">Enviar</button>
+      </form>
+    </div>
+  </main>
+
+  <aside class="side right demo-only">
+    <div class="box">
+      <h2>🛡️ The Bouncer<small>Strands Decider 2B</small></h2>
+      <div class="scroll" id="guard"><div class="empty">Before the assistant moves money, saves an account or sends an email, the Bouncer checks it here.</div></div>
+      <div class="ledger"><b>What actually ran</b><div id="ledger" class="empty">nothing yet</div></div>
+    </div>
+  </aside>
+</div>
+<button class="demo-toggle" id="enter-demo">Modo demostración</button>
+
 <script>
 const $ = (id) => document.getElementById(id);
 const esc = (s) => String(s).replace(/[&<>"]/g, (c) => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
@@ -192,12 +205,23 @@ const WHY = {
   user_requested_action: "only an email asked for this, not Carmen",
 };
 const EMPTY_GUARD = $("guard").innerHTML, EMPTY_PHONE = $("phone").innerHTML, HELLO = $("chat").innerHTML;
-let thinking = null, pending = null, ledgerSeen = 0, payees = [], scamIds = new Set();
+let thinking = null, pending = null, ledgerSeen = 0, payees = [], scamIds = new Set(), bands = {};
+
+// Demo panels: on with ?demo or the small link; remembered per browser.
+function setDemo(on) {
+  document.body.classList.toggle("demo", on);
+  try { localStorage.setItem("demo", on ? "1" : ""); } catch {}
+}
+let demoOn = new URLSearchParams(location.search).has("demo");
+try { demoOn = demoOn || !!localStorage.getItem("demo"); } catch {}
+setDemo(demoOn);
+$("enter-demo").onclick = () => setDemo(true);
+$("exit-demo").onclick = () => setDemo(false);
 
 fetch("/config").then(r => r.json()).then(c => {
-  window.bands = c.thresholds;
-  const bands = Object.entries(c.thresholds).map(([q, b]) => `${LABELS[q] || q} allow ≥ ${b.allow} / block ≤ ${b.block}`).join(" · ");
-  $("meta").textContent = `agent ${c.agent_model} · Decider 2B on ${c.decider_device} · ${bands} · unsure → ${c.escalation === "llm" ? c.judge_model : c.escalation}`;
+  bands = c.thresholds;
+  const txt = Object.entries(c.thresholds).map(([q, b]) => `${LABELS[q] || q} allow ≥ ${b.allow} / block ≤ ${b.block}`).join(" · ");
+  $("meta").textContent = `agent ${c.agent_model} · Decider 2B on ${c.decider_device} · ${txt} · unsure → ${c.escalation === "llm" ? c.judge_model : c.escalation}`;
 });
 
 function scrollDown(el) { el.scrollTop = el.scrollHeight; }
@@ -233,17 +257,17 @@ function renderWorld(w) {
     };
     if (open.has(el.dataset.id)) el.click();
   });
-  // Plain-language receipts for Carmen, one per new executed action.
+  // A plain receipt for Carmen for every action that really ran.
   for (const e of w.ledger.slice(ledgerSeen)) {
-    if (e.kind === "transfer") addChat(`<span class="ico">✅</span><div><b>Pagado: ${eur(e.amount_eur)} a ${esc(payeeName(e.iban))}</b>${esc(e.concept || "")}</div>`, "notice paid");
-    if (e.kind === "send_email") addChat(`<span class="ico">✉️</span><div><b>Correo enviado a ${esc(e.to)}</b>${esc(e.subject || "")}</div>`, "notice paid");
-    if (e.kind === "add_payee") addChat(`<span class="ico">📒</span><div><b>Cuenta guardada: ${esc(e.name)}</b>${esc(e.iban)}</div>`, "notice paid");
+    if (e.kind === "transfer") addChat(`<span class="ico">✅</span><div><b>Pagado: ${eur(e.amount_eur)}</b>a ${esc(payeeName(e.iban))}</div>`, "notice paid");
+    if (e.kind === "send_email") addChat(`<span class="ico">✉️</span><div><b>Correo enviado</b>a ${esc(e.to)}</div>`, "notice paid");
+    if (e.kind === "add_payee") addChat(`<span class="ico">📒</span><div><b>Cuenta guardada</b>${esc(e.name)}</div>`, "notice paid");
   }
   ledgerSeen = w.ledger.length;
   $("ledger").className = w.ledger.length ? "" : "empty";
   $("ledger").innerHTML = w.ledger.length
     ? w.ledger.map(e => `<div>✔ ${esc(e.kind)} ${esc(e.iban || e.to || "")} ${e.amount_eur ? esc(eur(e.amount_eur)) : ""}</div>`).join("")
-    : "nothing executed yet";
+    : "nothing yet";
 }
 
 function clearEmpty() { if ($("guard").querySelector(".empty")) $("guard").innerHTML = ""; }
@@ -268,7 +292,7 @@ function renderGuard(r) {
             : "Unsure: asking Carmen to confirm.";
   const qs = Object.entries(r.probabilities).map(([k, p]) => {
     // Colour by this question's own band: green = confidently safe, red = block, amber = unsure.
-    const b = (window.bands || {})[k] || (window.bands || {}).all || { allow: 0.5, block: 0.5 };
+    const b = bands[k] || bands.all || { allow: 0.5, block: 0.5 };
     const color = p >= b.allow ? "var(--safe)" : p <= b.block ? "var(--block)" : "var(--warn)";
     return `<div class="q"><span>${esc(LABELS[k] || k)}</span><div class="bar"><i style="width:0;background:${color}" data-w="${(p * 100).toFixed(1)}%"></i></div><b>${p.toFixed(2)}</b></div>`;
   }).join("");
@@ -291,8 +315,8 @@ function renderFamily(a) {
   div.innerHTML = `<div class="who">🛡️ Asistente de mamá</div><div class="head">⚠️ ${esc(head)}</div>${esc(rest.join("\n"))}<div class="time">${hhmm(a.ts)} ✓✓</div>`;
   $("phone").appendChild(div);
   scrollDown($("phone"));
-  // Carmen sees a short, calm notice in her own chat.
-  addChat(`<span class="ico">🛡️</span><div><b>Te he protegido de un correo sospechoso</b>${esc(a.owner_text)}</div>`, "notice shield");
+  // Carmen sees one short, calm notice. No account numbers, no jargon.
+  addChat(`<span class="ico">🛡️</span><div><b>He parado un correo engañoso</b>${esc(a.owner_text)}</div>`, "notice shield");
   if (a.email_id != null) {
     scamIds.add(a.email_id);
     const el = document.querySelector(`.mail[data-id="${a.email_id}"]`);
@@ -302,6 +326,7 @@ function renderFamily(a) {
 
 function resetView() {
   pending = null; thinking = null; ledgerSeen = 0; scamIds = new Set();
+  $("answers").classList.remove("show");
   $("chat").innerHTML = HELLO; $("guard").innerHTML = EMPTY_GUARD; $("phone").innerHTML = EMPTY_PHONE;
 }
 
@@ -313,27 +338,30 @@ source.onmessage = (e) => {
   if (ev.kind === "guard_start") renderPending(ev.data);
   if (ev.kind === "guard") renderGuard(ev.data);
   if (ev.kind === "family") renderFamily(ev.data);
-  if (ev.kind === "user") { addMsg("user", ev.data); thinking = addChat('Tu asistente está trabajando<span class="dots"></span>', "msg thinking"); }
-  if (ev.kind === "assistant") { if (thinking) thinking.remove(); thinking = null; addMsg("assistant", ev.data); }
+  if (ev.kind === "user") { addMsg("user", ev.data); thinking = addChat('Un momento, estoy en ello<span class="dots"></span>', "msg thinking"); }
+  if (ev.kind === "assistant") {
+    if (thinking) thinking.remove();
+    thinking = null;
+    addMsg("assistant", ev.data);
+    // A yes/no question gets two big answer buttons instead of making Carmen type.
+    $("answers").classList.toggle("show", /\?\s*$/.test(ev.data));
+  }
 };
 
 async function send(message) {
   message = message.trim();
   if (!message) return;
-  const buttons = document.querySelectorAll("#send, #quick button");
-  buttons.forEach(b => b.disabled = true);
+  $("answers").classList.remove("show");
+  const controls = document.querySelectorAll("#main, #send, #input, #answers button");
+  controls.forEach(b => b.disabled = true);
   $("input").value = "";
   try { await fetch("/chat", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ message }) }); }
-  finally { buttons.forEach(b => b.disabled = false); }
+  finally { controls.forEach(b => b.disabled = false); }
 }
 $("form").onsubmit = (e) => { e.preventDefault(); send($("input").value); };
-document.querySelectorAll("#quick button").forEach(b => b.onclick = () => send(b.dataset.msg));
+$("main").onclick = () => send($("main").dataset.msg);
+document.querySelectorAll("#answers button").forEach(b => b.onclick = () => send(b.dataset.msg));
 $("reset").onclick = () => fetch("/reset", { method: "POST" });
-$("bigger").onclick = () => {
-  document.body.classList.toggle("big");
-  try { localStorage.setItem("big", document.body.classList.contains("big") ? "1" : ""); } catch {}
-};
-try { if (localStorage.getItem("big")) document.body.classList.add("big"); } catch {}
 </script>
 </body>
 </html>
