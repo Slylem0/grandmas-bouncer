@@ -13,6 +13,8 @@ from pathlib import Path
 
 import yaml
 
+import itertools
+
 from decider_patterns import Thresholds, decide
 
 RESULTS = Path(__file__).resolve().parent / "results"
@@ -83,21 +85,70 @@ def cascade_rows(decider, fallback, fallback_name, t: Thresholds, ids):
     return rows, escalated
 
 
+GRID = (
+    0.02,
+    0.05,
+    0.1,
+    0.15,
+    0.2,
+    0.25,
+    0.3,
+    0.35,
+    0.4,
+    0.45,
+    0.5,
+    0.55,
+    0.6,
+    0.65,
+    0.7,
+    0.75,
+    0.8,
+    0.85,
+    0.9,
+    0.95,
+)
+
+
+def bands(names):
+    """Every (block < allow) band for every question."""
+    per_q = [(b, a) for b, a in itertools.product(GRID, GRID) if b < a]
+    for combo in itertools.product(per_q, repeat=len(names)):
+        yield {n: Thresholds(allow=a, block=b) for n, (b, a) in zip(names, combo, strict=True)}
+
+
 def sweep(decider, fallback, fallback_name, ids):
-    """Pick thresholds on dev: fewest errors, then fewest escalations."""
+    """Pick per-question bands on dev: fewest errors, then fewest escalations, then the widest
+    margin (most conservative bands) to reduce overfitting to the dev split."""
+    names = list(next(iter(decider.values()))["probabilities"])
     best = None
-    for allow in (0.5, 0.6, 0.7, 0.8, 0.85, 0.9, 0.95, 0.98):
-        for block in (0.02, 0.05, 0.1, 0.2, 0.3, 0.4, 0.5):
-            if block >= allow:
-                continue
-            rows, esc = cascade_rows(
-                decider, fallback, fallback_name, Thresholds(allow, block), ids
-            )
-            errors = sum(r[1] != r[0]["expected"] for r in rows)
-            key = (errors, esc)
-            if best is None or key < best[0]:
-                best = (key, allow, block)
+    for t in bands(names):
+        rows, esc = cascade_rows(decider, fallback, fallback_name, t, ids)
+        errors = sum(r[1] != r[0]["expected"] for r in rows)
+        width = sum(b.allow - b.block for b in t.values())
+        key = (errors, esc, -width)
+        if best is None or key < best[0]:
+            best = (key, t)
     return best
+
+
+def tuned_cut(decider, ids):
+    """Decider alone, no escalation: one cut per question, tuned on dev."""
+    names = list(next(iter(decider.values()))["probabilities"])
+    best = None
+    for cuts in itertools.product(GRID, repeat=len(names)):
+        cut = dict(zip(names, cuts, strict=True))
+        errors = sum(verdict_cut(decider[i], cut) != decider[i]["expected"] for i in ids)
+        if best is None or errors < best[0]:
+            best = (errors, cut)
+    return best[1]
+
+
+def verdict_cut(row, cut):
+    return "allow" if all(p >= cut[q] for q, p in row["probabilities"].items()) else "block"
+
+
+def fmt(t):
+    return ", ".join(f"{q}: allow >= {b.allow}, block <= {b.block}" for q, b in t.items())
 
 
 def table(results: dict[str, dict]) -> str:
@@ -121,7 +172,7 @@ def main() -> None:
 
     results = {}
     if decider:
-        results["decider (p>=0.5)"] = metrics(
+        results["decider (p >= 0.5)"] = metrics(
             [(decider[i], binary(decider[i]), decider[i]["latency_ms"], 0.0) for i in ids]
         )
     for name in MODEL_OF:
@@ -142,15 +193,22 @@ def main() -> None:
         lines.append(
             "> Prices from third-party aggregators, not yet verified against the AWS Bedrock pricing page (see pricing.yaml).\n"
         )
+    if decider:
+        cut = tuned_cut(decider, dev_ids)
+        results["decider (cut tuned on dev)"] = metrics(
+            [(decider[i], verdict_cut(decider[i], cut), decider[i]["latency_ms"], 0.0) for i in ids]
+        )
+        lines.append(f"Decider-only cut tuned on dev: {cut}.\n\n")
     if decider and fallback:
-        (errors, esc), allow, block = sweep(decider, fallback, args.fallback, dev_ids)
-        t = Thresholds(allow, block)
+        (errors, esc, _), t = sweep(decider, fallback, args.fallback, dev_ids)
         rows, escalated = cascade_rows(decider, fallback, args.fallback, t, ids)
         results[f"cascade decider -> {args.fallback}"] = metrics(rows)
         lines.append(
-            f"Cascade thresholds chosen on dev: allow >= {allow}, block <= {block} "
-            f"(dev errors {errors}, dev escalations {esc}). Escalated on {args.split}: "
-            f"{escalated}/{len(ids)} ({escalated / len(ids):.0%}).\n"
+            f"Cascade bands chosen on dev ({fmt(t)}); dev errors {errors}, dev escalations {esc}. "
+            f"Escalated on {args.split}: {escalated}/{len(ids)} ({escalated / len(ids):.0%}).\n\n"
+        )
+        (RESULTS / "thresholds.json").write_text(
+            json.dumps({q: {"allow": b.allow, "block": b.block} for q, b in t.items()}, indent=2)
         )
     lines.append(table(results))
     lines.append(

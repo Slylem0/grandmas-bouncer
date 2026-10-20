@@ -31,14 +31,24 @@ class Thresholds:
 DEFAULT_THRESHOLDS = Thresholds()
 
 
+# One band for every question, or a band per question name. Per-question bands matter in
+# practice: on out-of-domain tasks Decider's ranking can be sharp while its raw probabilities sit
+# in the middle, and each question lands in a different range.
+ThresholdSpec = Thresholds | Mapping[str, Thresholds]
+
+
+def _band(thresholds: ThresholdSpec, name: str) -> Thresholds:
+    return thresholds if isinstance(thresholds, Thresholds) else thresholds[name]
+
+
 def decide(
-    probabilities: Mapping[str, float], thresholds: Thresholds = DEFAULT_THRESHOLDS
+    probabilities: Mapping[str, float], thresholds: ThresholdSpec = DEFAULT_THRESHOLDS
 ) -> Verdict:
     """Block if any question is confidently unsafe, allow if all are confidently safe."""
     if not probabilities:
         raise ValueError("no probabilities to decide on")
-    if any(p <= thresholds.block for p in probabilities.values()):
+    if any(p <= _band(thresholds, q).block for q, p in probabilities.items()):
         return "block"
-    if all(p >= thresholds.allow for p in probabilities.values()):
+    if all(p >= _band(thresholds, q).allow for q, p in probabilities.items()):
         return "allow"
     return "escalate"

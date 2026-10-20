@@ -18,7 +18,7 @@ from typing import Any, Literal
 
 from strands.interventions import Confirm, Deny, InterventionHandler, Proceed
 
-from .cascade import DEFAULT_THRESHOLDS, Thresholds, Verdict, decide
+from .cascade import DEFAULT_THRESHOLDS, ThresholdSpec, Verdict, decide
 from .client import DeciderClient
 from .provenance import ProvenancePolicy, render_state
 
@@ -86,7 +86,7 @@ class GroundingGuard(InterventionHandler):
         provenance: ProvenancePolicy | None = None,
         client: DeciderClient | None = None,
         questions: Mapping[str, dict[str, Any]] | None = None,
-        thresholds: Thresholds = DEFAULT_THRESHOLDS,
+        thresholds: ThresholdSpec = DEFAULT_THRESHOLDS,
         escalation: EscalationMode = "block",
         llm_judge: Callable[[str], float] | None = None,
         explain: Callable[[GuardRecord], str] = _default_explain,

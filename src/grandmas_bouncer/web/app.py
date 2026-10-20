@@ -1,6 +1,6 @@
 """FastAPI demo: Carmen's inbox, the chat with her assistant, and the Bouncer's live decisions.
 
-    uv run python -m grandmas_bouncer.web    # http://127.0.0.1:8000
+uv run python -m grandmas_bouncer.web    # http://127.0.0.1:8000
 """
 
 from __future__ import annotations
@@ -110,7 +110,7 @@ async def events() -> StreamingResponse:
         while True:
             if sent > len(session.events):  # session was reset
                 sent = 0
-                yield "data: {\"kind\": \"reset\"}\n\n"
+                yield 'data: {"kind": "reset"}\n\n'
             while sent < len(session.events):
                 yield f"data: {json.dumps(session.events[sent], default=str)}\n\n"
                 sent += 1

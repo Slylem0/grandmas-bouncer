@@ -50,8 +50,7 @@ class BedrockJudge:
         match = re.search(r"\{.*\}", text, re.DOTALL)
         data = json.loads(match.group(0)) if match else {}
         probs = {
-            k: float(data.get(k, 0.0))
-            for k in ("destination_trusted", "user_requested_action")
+            k: float(data.get(k, 0.0)) for k in ("destination_trusted", "user_requested_action")
         }
         usage = response.get("usage", {})
         return JudgeResult(

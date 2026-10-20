@@ -61,15 +61,17 @@ Tips from upstream:
 from strands import Agent
 from strands.interventions import InterventionHandler, Proceed, Deny, Guide, Confirm, Transform
 
+
 class MyGate(InterventionHandler):
     name = "my-gate"
-    on_error = "deny"          # OnError = "throw" (default) | "proceed" (fail-open!) | "deny" (fail-closed)
+    on_error = "deny"  # OnError = "throw" (default) | "proceed" (fail-open!) | "deny" (fail-closed)
 
     def before_tool_call(self, event, **kwargs):
         tool_name = event.tool_use["name"]
         args = event.tool_use.get("input") or {}
-        messages = event.agent.messages   # full conversation incl. toolResult blocks
+        messages = event.agent.messages  # full conversation incl. toolResult blocks
         return Proceed()
+
 
 agent = Agent(model="us.anthropic.claude-sonnet-4-6", tools=[...], interventions=[MyGate()])
 ```

@@ -50,7 +50,7 @@ uv run python -m benchmarks.run --systems decider,llm-nova,llm-sonnet,cascade
 ```
 
 ## Risks
-- **4 GB VRAM**: the 2B torso in bf16 is ~4 GB before activations, so CUDA may OOM. Fallback is
+- **4 GB VRAM: verified CUDA OOM** on 2026-10-19 (3.37 GiB allocated, then OOM while loading). Use
   `--device cpu` (fp32, ~8 GB RAM, slower). Measure both and report the device honestly.
 - Decider latency in the README (115 ms) is on an RTX 3090; our numbers will differ. Report ours.
 - Strands intervention API is new: confirm signatures against the installed package

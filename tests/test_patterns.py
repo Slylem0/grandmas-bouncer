@@ -183,3 +183,10 @@ def test_listeners_receive_records():
 def test_client_unreachable_raises():
     with pytest.raises(DeciderUnavailable):
         DeciderClient("http://127.0.0.1:9", timeout=1).ask("s", {"q": DeciderClient.noul("q?")})
+
+
+def test_decide_per_question_bands():
+    bands = {"d": Thresholds(allow=0.6, block=0.45), "u": Thresholds(allow=0.3, block=0.2)}
+    assert decide({"d": 0.63, "u": 0.31}, bands) == "allow"
+    assert decide({"d": 0.74, "u": 0.18}, bands) == "block"
+    assert decide({"d": 0.5, "u": 0.9}, bands) == "escalate"
