@@ -30,7 +30,7 @@ Each task names its owner subagent (see `.claude/agents/`). Tick boxes as you go
 - [x] 3.3 `benchmarks/pricing.yaml` with on-demand prices, source URL and date. _Req 9.3_
 - [x] 3.4 `benchmarks/run.py`: runs systems, writes jsonl + `summary.md` with device/checkpoint. _Req 9.2, 9.4, 9.6_
 - [x] 3.5 `benchmarks/sweep.py`: threshold sweep; write ADR 0003 with chosen thresholds. _Req 9.5, 4.5_ (per-question sweep lives in `benchmarks/summarize.py`, writes `results/thresholds.json`; ADR 0003 to update with final numbers)
-- [ ] 3.6 Tune question wording/criteria if the sweep shows a weak question (record before/after numbers, no cherry-picking: keep a held-out split).
+- [x] 3.6 Tune question wording/criteria if the sweep shows a weak question (record before/after numbers, no cherry-picking: keep a held-out split).
 
 ## Phase 4: Escalation + web UI (D3) — owner `agent-builder`
 - [x] 4.1 Escalation `llm` via Bedrock judge, and `human` via `Confirm`. _Req 4.3_
@@ -38,9 +38,9 @@ Each task names its owner subagent (see `.claude/agents/`). Tick boxes as you go
 - [ ] 4.3 Family alert panel. _Req 7.5 (P2)_
 
 ## Phase 5: Ship (D3-D4) — owner `storyteller`, review by `reviewer`
-- [ ] 5.1 `decider_patterns/README.md` recipe + `examples/minimal_guard.py` (< 40 lines, non-banking). _Req 10_
-- [ ] 5.2 `README.md` final (diagram, quickstart, results table from summary.md). _Req 11.1_
-- [ ] 5.3 `docs/article/article.md` for Builder Center. _Req 11.2_
-- [ ] 5.4 `docs/article/video-script.md` (< 3 min shot list) and record video. _Req 11.3_
-- [ ] 5.5 `reviewer` pass: requirements checklist, no invented numbers, no real brands/IBANs, tests green.
+- [x] 5.1 `decider_patterns/README.md` recipe + `examples/minimal_guard.py` (< 40 lines, non-banking). _Req 10_
+- [x] 5.2 `README.md` final (diagram, quickstart, results table from summary.md). _Req 11.1_
+- [x] 5.3 `docs/article/article.md` for Builder Center. _Req 11.2_
+- [ ] 5.4 `docs/article/video-script.md` (< 3 min shot list) and record video. _Req 11.3_ (script done in `docs/article/video-script.md`; recording pending, Pablo)
+- [x] 5.5 `reviewer` pass: requirements checklist, no invented numbers, no real brands/IBANs, tests green.
 - [ ] 5.6 LICENSE (Apache-2.0), push public repo `Slylem0/grandmas-bouncer`, publish article with tags, submit before 2026-10-23 23:59 PT. _Req 11.4_

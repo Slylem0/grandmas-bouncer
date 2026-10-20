@@ -102,7 +102,8 @@ const FINAL = { proceed: "ALLOWED", llm_allow: "ALLOWED (LLM)", deny: "BLOCKED",
 let thinking = null;
 
 fetch("/config").then(r => r.json()).then(c => {
-  $("meta").textContent = `agent: ${c.agent_model} · decider on ${c.decider_device} · allow ≥ ${c.thresholds.allow}, block ≤ ${c.thresholds.block} · unsure → ${c.escalation === "llm" ? c.judge_model : c.escalation}`;
+  const bands = Object.entries(c.thresholds).map(([q, b]) => `${LABELS[q] || q} allow ≥ ${b.allow} / block ≤ ${b.block}`).join(" · ");
+  $("meta").textContent = `agent: ${c.agent_model} · Decider 2B on ${c.decider_device} · ${bands} · unsure → ${c.escalation === "llm" ? c.judge_model : c.escalation}`;
 });
 
 function addMsg(kind, text) {

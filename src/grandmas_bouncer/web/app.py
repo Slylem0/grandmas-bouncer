@@ -81,7 +81,14 @@ def config() -> dict[str, Any]:
         "agent_model": settings.agent_model,
         "judge_model": settings.judge_model,
         "escalation": settings.escalation,
-        "thresholds": {"allow": settings.allow_threshold, "block": settings.block_threshold},
+        "thresholds": {
+            q: {"allow": b.allow, "block": b.block}
+            for q, b in (
+                settings.thresholds.items()
+                if isinstance(settings.thresholds, dict)
+                else {"all": settings.thresholds}.items()
+            )
+        },
         "decider_device": device,
     }
 
