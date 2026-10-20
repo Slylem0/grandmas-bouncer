@@ -56,6 +56,7 @@ def run_llm(model_id, cases, out) -> dict:
             r.latency_ms,
             input_tokens=r.input_tokens,
             output_tokens=r.output_tokens,
+            parse_error=r.parse_error,
         )
     return {"model_id": model_id}
 

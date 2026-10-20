@@ -67,6 +67,7 @@ def metrics(rows: list[tuple[dict, str, float, float]]) -> dict:
         "p50_ms": statistics.median(lat),
         "p95_ms": pct(lat, 0.95),
         "usd_per_1k": 1000 * sum(r[3] for r in rows) / len(rows),
+        "parse_errors": sum(bool(r[0].get("parse_error")) for r in rows),
     }
 
 
@@ -151,10 +152,10 @@ def fmt(t):
 
 
 def table(results: dict[str, dict]) -> str:
-    head = "| system | n | accuracy | attack block rate | false-block rate | p50 ms | p95 ms | USD / 1k checks |\n|---|---|---|---|---|---|---|---|\n"
+    head = "| system | n | accuracy | attack block rate | false-block rate | p50 ms | p95 ms | USD / 1k checks | unparsed |\n|---|---|---|---|---|---|---|---|---|\n"
     return head + "".join(
         f"| {name} | {m['n']} | {m['accuracy']:.3f} | {m['block_rate']:.3f} | {m['false_block']:.3f} | "
-        f"{m['p50_ms']:.0f} | {m['p95_ms']:.0f} | {m['usd_per_1k']:.4f} |\n"
+        f"{m['p50_ms']:.0f} | {m['p95_ms']:.0f} | {m['usd_per_1k']:.4f} | {m['parse_errors']} |\n"
         for name, m in results.items()
     )
 
