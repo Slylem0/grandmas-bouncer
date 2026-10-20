@@ -1,209 +1,339 @@
 <!doctype html>
-<html lang="en">
+<html lang="es">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Grandma's Bouncer</title>
 <style>
   :root {
-    --bg: #f6f3ee; --panel: #ffffff; --ink: #1f2328; --muted: #6a6f76; --line: #e4ded4;
-    --safe: #1f8a4c; --safe-bg: #e6f4ec; --block: #c6362f; --block-bg: #fbe9e7;
-    --warn: #b7791f; --warn-bg: #fdf3e1; --accent: #2f5d9e; --untrusted: #fff4e5;
+    --fs: 19px;
+    --bg: #f4efe7; --panel: #ffffff; --ink: #1d2126; --muted: #5d636b; --line: #e2dacd;
+    --safe: #17804a; --safe-bg: #e3f3ea; --block: #c0322b; --block-bg: #fce8e6;
+    --warn: #a86b12; --warn-bg: #fdf2dd; --accent: #2a5594; --accent-bg: #e9f0fa;
+    --untrusted: #fffaf2; --wa: #075e54; --wa-bg: #e5ddd5; --wa-bubble: #ffffff;
   }
+  body.big { --fs: 23px; }
   * { box-sizing: border-box; }
   body { margin: 0; background: var(--bg); color: var(--ink);
-         font: 17px/1.45 system-ui, -apple-system, "Segoe UI", sans-serif; }
-  header { display: flex; align-items: center; gap: 24px; padding: 14px 24px;
-           border-bottom: 1px solid var(--line); background: var(--panel); }
-  header h1 { font-size: 22px; margin: 0; }
-  header .meta { color: var(--muted); font-size: 14px; }
-  .balance { margin-left: auto; text-align: right; }
-  .balance .eur { font-size: 30px; font-weight: 700; font-variant-numeric: tabular-nums; }
-  .balance .lbl { font-size: 13px; color: var(--muted); }
-  main { display: grid; grid-template-columns: 1fr 1.25fr 1.25fr; gap: 16px; padding: 16px 24px;
-         height: calc(100vh - 78px); }
-  section { background: var(--panel); border: 1px solid var(--line); border-radius: 12px;
-            display: flex; flex-direction: column; min-height: 0; }
-  section h2 { font-size: 15px; text-transform: uppercase; letter-spacing: .06em; color: var(--muted);
-               margin: 0; padding: 12px 16px; border-bottom: 1px solid var(--line); }
+         font: var(--fs)/1.45 system-ui, -apple-system, "Segoe UI", sans-serif; }
+  button { font: inherit; cursor: pointer; }
+
+  header { display: flex; align-items: center; gap: 20px; padding: 12px 24px;
+           background: var(--panel); border-bottom: 1px solid var(--line); }
+  header h1 { font-size: 1.35em; margin: 0; }
+  header .sub { color: var(--muted); font-size: .72em; }
+  .balance { margin-left: auto; text-align: right; background: var(--safe-bg); border-radius: 14px;
+             padding: 6px 18px; border: 2px solid #bfe3cd; }
+  .balance .lbl { font-size: .72em; color: var(--safe); font-weight: 700; }
+  .balance .eur { font-size: 1.7em; font-weight: 800; font-variant-numeric: tabular-nums; line-height: 1.1; }
+  .tools { display: flex; gap: 8px; }
+  .small { font-size: .72em; padding: 8px 12px; border-radius: 10px; border: 1px solid var(--line);
+           background: var(--panel); color: var(--muted); }
+
+  main { display: grid; grid-template-columns: 1fr 1.45fr 1.15fr; gap: 16px; padding: 16px 24px;
+         height: calc(100vh - 84px); }
+  .col { display: flex; flex-direction: column; gap: 16px; min-height: 0; }
+  section { background: var(--panel); border: 1px solid var(--line); border-radius: 16px;
+            display: flex; flex-direction: column; min-height: 0; overflow: hidden; }
+  section h2 { font-size: .9em; margin: 0; padding: 12px 16px; border-bottom: 1px solid var(--line);
+               display: flex; align-items: center; gap: 8px; }
+  section h2 .hint { margin-left: auto; font-weight: 400; color: var(--muted); font-size: .8em; }
   .scroll { overflow-y: auto; padding: 12px 16px; flex: 1; }
-  .mail { padding: 10px 12px; border-radius: 8px; border: 1px solid var(--line); margin-bottom: 8px;
-          cursor: pointer; background: var(--untrusted); }
-  .mail .from { font-size: 13px; color: var(--muted); }
-  .mail .subj { font-weight: 600; }
-  .mail .body { display: none; white-space: pre-wrap; font-size: 14px; margin-top: 6px; }
+  .empty { color: var(--muted); font-size: .8em; }
+
+  /* Inbox */
+  .inbox { flex: 1.1; }
+  .mail { padding: 10px 12px; border-radius: 12px; border: 1px solid var(--line); margin-bottom: 8px;
+          cursor: pointer; background: var(--untrusted); transition: background .3s; }
+  .mail .from { font-size: .72em; color: var(--muted); word-break: break-all; }
+  .mail .subj { font-weight: 650; font-size: .88em; }
+  .mail .body { display: none; white-space: pre-wrap; font-size: .76em; margin-top: 6px; }
   .mail.open .body { display: block; }
-  .tag { font-size: 11px; font-weight: 700; padding: 1px 6px; border-radius: 4px; }
-  .tag.untrusted { background: #f5d8a8; color: #7a4a00; }
-  .msg { margin-bottom: 12px; max-width: 92%; padding: 10px 14px; border-radius: 12px; white-space: pre-wrap; }
-  .msg.user { background: var(--accent); color: white; margin-left: auto; border-bottom-right-radius: 4px; }
+  .mail.scam { background: var(--block-bg); border: 2px solid var(--block); }
+  .badge { display: none; font-size: .68em; font-weight: 800; color: #fff; background: var(--block);
+           border-radius: 6px; padding: 1px 8px; margin-bottom: 4px; }
+  .mail.scam .badge { display: inline-block; }
+  .tag { font-size: .62em; font-weight: 700; padding: 2px 7px; border-radius: 5px;
+         background: #f3dcb2; color: #6e4300; }
+
+  /* Lucía's phone */
+  .phone { flex: 1; background: var(--wa-bg); border: 6px solid #1d2126; border-radius: 26px; }
+  .phone h2 { background: var(--wa); color: #fff; border: 0; }
+  .phone h2 .hint { color: #cfe6e2; }
+  .phone .scroll { padding: 10px 12px; }
+  .wa { background: var(--wa-bubble); border-radius: 4px 12px 12px 12px; padding: 8px 12px;
+        margin-bottom: 10px; font-size: .74em; box-shadow: 0 1px 1px #0002; animation: pop .4s ease-out;
+        white-space: pre-wrap; }
+  .wa .who { color: var(--wa); font-weight: 700; font-size: .92em; }
+  .wa .head { color: var(--block); font-weight: 800; }
+  .wa .time { text-align: right; color: var(--muted); font-size: .8em; }
+  .phone .empty { text-align: center; margin-top: 20px; }
+
+  /* Chat */
+  .chat .scroll { padding: 16px; }
+  .msg { margin-bottom: 14px; max-width: 88%; padding: 12px 16px; border-radius: 16px; white-space: pre-wrap; }
+  .msg.user { background: var(--accent); color: #fff; margin-left: auto; border-bottom-right-radius: 4px; }
   .msg.assistant { background: #eef1f5; border-bottom-left-radius: 4px; }
-  .msg.thinking { color: var(--muted); font-style: italic; background: none; }
-  form { display: flex; gap: 8px; padding: 12px 16px; border-top: 1px solid var(--line); }
-  input[type=text] { flex: 1; font: inherit; padding: 10px 12px; border: 1px solid var(--line); border-radius: 8px; }
-  button { font: inherit; padding: 10px 16px; border-radius: 8px; border: 0; background: var(--accent);
-           color: white; cursor: pointer; }
-  button.ghost { background: transparent; color: var(--muted); border: 1px solid var(--line); }
+  .msg.thinking { color: var(--muted); background: none; font-style: italic; }
+  .dots::after { content: ""; animation: dots 1.2s steps(4) infinite; }
+  @keyframes dots { 0% { content: ""; } 25% { content: "."; } 50% { content: ".."; } 75% { content: "..."; } }
+  .notice { border-radius: 14px; padding: 12px 16px; margin: 4px 0 14px; display: flex; gap: 12px;
+            align-items: flex-start; animation: pop .4s ease-out; }
+  .notice .ico { font-size: 1.6em; line-height: 1; }
+  .notice b { display: block; }
+  .notice.shield { background: var(--block-bg); border: 2px solid var(--block); }
+  .notice.paid { background: var(--safe-bg); border: 2px solid var(--safe); }
+  .quick { display: flex; flex-wrap: wrap; gap: 8px; padding: 12px 16px 0; border-top: 1px solid var(--line); }
+  .quick button { border: 2px solid var(--accent); background: var(--accent-bg); color: var(--accent);
+                  border-radius: 999px; padding: 8px 16px; font-size: .85em; font-weight: 600; }
+  .quick button:hover { background: var(--accent); color: #fff; }
+  form { display: flex; gap: 10px; padding: 12px 16px 16px; }
+  input[type=text] { flex: 1; font: inherit; padding: 12px 14px; border: 2px solid var(--line);
+                     border-radius: 12px; min-width: 0; }
+  input[type=text]:focus { outline: none; border-color: var(--accent); }
+  .send { padding: 12px 22px; border-radius: 12px; border: 0; background: var(--accent); color: #fff;
+          font-weight: 700; }
   button:disabled { opacity: .5; cursor: wait; }
-  .card { border-radius: 10px; padding: 12px 14px; margin-bottom: 12px; border: 2px solid; animation: pop .35s ease-out; }
+
+  /* Bouncer (technical view for the demo) */
+  .bouncer { flex: 1; }
+  .card { border-radius: 12px; padding: 10px 12px; margin-bottom: 12px; border: 2px solid; animation: pop .35s ease-out;
+          font-size: .78em; }
   @keyframes pop { from { transform: scale(.96); opacity: 0; } to { transform: none; opacity: 1; } }
   .card.allow { border-color: var(--safe); background: var(--safe-bg); }
   .card.block { border-color: var(--block); background: var(--block-bg); }
   .card.escalate { border-color: var(--warn); background: var(--warn-bg); }
-  .card .top { display: flex; justify-content: space-between; align-items: baseline; }
+  .card.pending { border-color: var(--accent); background: var(--accent-bg); }
+  .card .top { display: flex; justify-content: space-between; align-items: baseline; gap: 8px; }
   .card .tool { font-weight: 700; font-family: ui-monospace, monospace; }
-  .verdict { font-weight: 800; letter-spacing: .04em; }
-  .allow .verdict { color: var(--safe); } .block .verdict { color: var(--block); } .escalate .verdict { color: var(--warn); }
-  .args { font-family: ui-monospace, monospace; font-size: 13px; margin: 6px 0 8px; word-break: break-all; }
-  .q { display: grid; grid-template-columns: 170px 1fr 48px; gap: 8px; align-items: center; font-size: 13px; margin: 3px 0; }
+  .verdict { font-weight: 800; letter-spacing: .04em; white-space: nowrap; }
+  .allow .verdict { color: var(--safe); } .block .verdict { color: var(--block); }
+  .escalate .verdict { color: var(--warn); } .pending .verdict { color: var(--accent); }
+  .why { font-weight: 600; margin: 4px 0; }
+  .args { font-family: ui-monospace, monospace; font-size: .88em; margin: 4px 0 8px; word-break: break-all; color: var(--muted); }
+  .q { display: grid; grid-template-columns: 9.5em 1fr 3em; gap: 8px; align-items: center; margin: 3px 0; }
   .bar { height: 10px; background: #00000014; border-radius: 5px; overflow: hidden; }
   .bar i { display: block; height: 100%; border-radius: 5px; transition: width .6s ease; }
-  .lat { font-size: 13px; color: var(--muted); margin-top: 6px; }
-  .ledger { border-top: 1px solid var(--line); padding: 10px 16px; font-size: 14px; max-height: 30%; overflow-y: auto; }
-  .ledger div { font-family: ui-monospace, monospace; font-size: 13px; }
-  .empty { color: var(--muted); font-size: 14px; }
-  .card.pending { border-color: var(--accent); background: #eef3fb; }
-  .card.pending .verdict { color: var(--accent); }
-  .spinner { display: inline-block; width: 14px; height: 14px; border: 2px solid var(--accent);
+  .lat { color: var(--muted); margin-top: 6px; }
+  .spinner { display: inline-block; width: 13px; height: 13px; border: 2px solid var(--accent);
              border-right-color: transparent; border-radius: 50%; animation: spin .8s linear infinite;
              vertical-align: -2px; margin-right: 6px; }
   @keyframes spin { to { transform: rotate(360deg); } }
-  .phone { position: fixed; left: 24px; bottom: 24px; width: 360px; background: #1f2328; color: #fff;
-           border-radius: 18px; padding: 14px 16px; box-shadow: 0 12px 32px #0006; font-size: 15px;
-           transform: translateY(140%); transition: transform .5s cubic-bezier(.2,.9,.3,1.2); z-index: 10; }
-  .phone.show { transform: none; }
-  .phone .app { font-size: 12px; color: #aab; display: flex; justify-content: space-between; margin-bottom: 4px; }
-  .phone b { display: block; margin-bottom: 4px; }
-  @media (max-width: 900px) { main { grid-template-columns: 1fr; height: auto; } section { min-height: 300px; } }
+  .ledger { border-top: 1px solid var(--line); padding: 10px 16px; font-size: .74em; max-height: 34%; overflow-y: auto; }
+  .ledger div { margin-top: 2px; }
+  .meta { font-size: .62em; color: var(--muted); padding: 8px 16px; border-top: 1px solid var(--line); }
+
+  @media (max-width: 1000px) {
+    main { grid-template-columns: 1fr; height: auto; padding: 12px 16px; }
+    section { min-height: 260px; }
+    .chat { order: -1; min-height: 70vh; }
+    header { flex-wrap: wrap; padding: 12px 16px; }
+  }
 </style>
 </head>
 <body>
 <header>
   <div>
-    <h1>👵 Grandma's Bouncer</h1>
-    <div class="meta" id="meta">loading…</div>
+    <h1>👵 El asistente de Carmen</h1>
+    <div class="sub">Grandma's Bouncer · Strands agent on Amazon Bedrock, guarded by Strands Decider 2B</div>
   </div>
-  <div class="balance"><div class="eur" id="balance">–</div><div class="lbl">Carmen's balance</div></div>
+  <div class="balance"><div class="lbl">💶 Tu dinero en el banco</div><div class="eur" id="balance">–</div></div>
+  <div class="tools">
+    <button class="small" id="bigger" title="Letra más grande">A+ Letra</button>
+    <button class="small" id="reset" title="Volver a empezar la demo">🔄 Reiniciar</button>
+  </div>
 </header>
 <main>
-  <section>
-    <h2>📬 Inbox <span class="tag untrusted">UNTRUSTED</span></h2>
-    <div class="scroll" id="inbox"></div>
-  </section>
-  <section>
-    <h2>💬 Carmen ↔ Assistant (Bedrock)</h2>
-    <div class="scroll" id="chat"></div>
+  <div class="col">
+    <section class="inbox">
+      <h2>📬 Tu correo <span class="tag">untrusted · no fiable</span><span class="hint">toca para leer</span></h2>
+      <div class="scroll" id="inbox"></div>
+    </section>
+    <section class="phone">
+      <h2>📱 Móvil de Lucía (hija)<span class="hint">avisos de seguridad</span></h2>
+      <div class="scroll" id="phone"><div class="empty">Si alguien intenta engañar a Carmen,<br>Lucía recibe un aviso aquí.</div></div>
+    </section>
+  </div>
+
+  <section class="chat">
+    <h2>💬 Habla con tu asistente<span class="hint">escribe o toca un botón</span></h2>
+    <div class="scroll" id="chat">
+      <div class="msg assistant">¡Hola, Carmen! 😊 Soy tu asistente. Puedo leer tu correo, pagar tus facturas y escribir a tu familia.
+Toca uno de los botones de abajo o escríbeme lo que necesites.</div>
+    </div>
+    <div class="quick" id="quick">
+      <button data-msg="Hola, soy Carmen. Revisa mi correo, paga lo que tenga pendiente y dime si hay algo importante, por favor.">📬 Revisa mi correo y paga lo pendiente</button>
+      <button data-msg="Paga la factura de la luz de octubre a la cuenta de Luz Clara que tengo guardada.">💡 Paga la luz a la cuenta de siempre</button>
+      <button data-msg="Responde a Mateo que muchas gracias y que el domingo os espero a comer.">🎂 Contesta a Mateo</button>
+      <button data-msg="¿Cuánto dinero tengo en el banco?">💶 ¿Cuánto dinero tengo?</button>
+    </div>
     <form id="form">
-      <input type="text" id="input" autocomplete="off"
-             value="Hola, soy Carmen. Revisa mi correo, paga lo que tenga pendiente y dime si hay algo importante, por favor.">
-      <button id="send">Send</button>
-      <button type="button" class="ghost" id="reset">Reset</button>
+      <input type="text" id="input" autocomplete="off" placeholder="Escribe aquí lo que necesitas…">
+      <button class="send" id="send">Enviar ➤</button>
     </form>
   </section>
-  <section>
-    <h2>🛡️ The Bouncer (Decider 2B, local)</h2>
-    <div class="scroll" id="guard"><div class="empty">Every sensitive tool call is reviewed here before it runs.</div></div>
-    <div class="ledger"><strong>What actually happened</strong><div id="ledger" class="empty">nothing executed yet</div></div>
+
+  <section class="bouncer">
+    <h2>🛡️ The Bouncer: behind the scenes<span class="hint">Decider 2B</span></h2>
+    <div class="scroll" id="guard"><div class="empty">Before the assistant moves money, saves an account or sends an email, the Bouncer checks it here.</div></div>
+    <div class="ledger"><b>What actually happened</b><div id="ledger" class="empty">nothing executed yet</div></div>
+    <div class="meta" id="meta">loading…</div>
   </section>
 </main>
-<div class="phone" id="phone"><div class="app"><span>📱 Mensajes · para Lucía (hija)</span><span>ahora</span></div>
-  <b>🛡️ Grandma's Bouncer</b><div id="phone-text"></div></div>
 <script>
 const $ = (id) => document.getElementById(id);
 const esc = (s) => String(s).replace(/[&<>"]/g, (c) => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
-const LABELS = { destination_trusted: "destination trusted?", user_requested_action: "user asked for it?" };
-const FINAL = { proceed: "ALLOWED", llm_allow: "ALLOWED (LLM)", deny: "BLOCKED", llm_block: "BLOCKED (LLM)", confirm: "ASK CARMEN" };
-let thinking = null;
+const eur = (n) => Number(n).toLocaleString("es-ES", { style: "currency", currency: "EUR", useGrouping: "always" });
+const hhmm = (ts) => new Date(ts * 1000).toLocaleTimeString("es-ES", { hour: "2-digit", minute: "2-digit" });
+const LABELS = { destination_trusted: "destination trusted?", user_requested_action: "Carmen asked for it?" };
+const FINAL = { proceed: "✓ ALLOWED", llm_allow: "✓ ALLOWED (LLM)", deny: "✕ BLOCKED", llm_block: "✕ BLOCKED (LLM)", confirm: "? ASK CARMEN" };
+const WHY = {
+  destination_trusted: "the destination only appears in an email, not in Carmen's saved records",
+  user_requested_action: "only an email asked for this, not Carmen",
+};
+const EMPTY_GUARD = $("guard").innerHTML, EMPTY_PHONE = $("phone").innerHTML, HELLO = $("chat").innerHTML;
+let thinking = null, pending = null, ledgerSeen = 0, payees = [], scamIds = new Set();
 
 fetch("/config").then(r => r.json()).then(c => {
+  window.bands = c.thresholds;
   const bands = Object.entries(c.thresholds).map(([q, b]) => `${LABELS[q] || q} allow ≥ ${b.allow} / block ≤ ${b.block}`).join(" · ");
-  $("meta").textContent = `agent: ${c.agent_model} · Decider 2B on ${c.decider_device} · ${bands} · unsure → ${c.escalation === "llm" ? c.judge_model : c.escalation}`;
+  $("meta").textContent = `agent ${c.agent_model} · Decider 2B on ${c.decider_device} · ${bands} · unsure → ${c.escalation === "llm" ? c.judge_model : c.escalation}`;
 });
 
-function addMsg(kind, text) {
+function scrollDown(el) { el.scrollTop = el.scrollHeight; }
+function addChat(html, cls) {
   const div = document.createElement("div");
-  div.className = `msg ${kind}`;
-  div.textContent = text;
+  div.className = cls;
+  div.innerHTML = html;
   $("chat").appendChild(div);
-  $("chat").scrollTop = $("chat").scrollHeight;
+  scrollDown($("chat"));
   return div;
+}
+const addMsg = (kind, text) => addChat(esc(text), `msg ${kind}`);
+
+function payeeName(iban) {
+  const p = payees.find(p => p.iban.replace(/\s/g, "") === String(iban).replace(/\s/g, ""));
+  return p ? p.name : iban;
 }
 
 function renderWorld(w) {
-  $("balance").textContent = w.balance_eur.toLocaleString("es-ES", { style: "currency", currency: "EUR" });
+  payees = w.payees;
+  $("balance").textContent = eur(w.balance_eur);
+  const open = new Set([...document.querySelectorAll(".mail.open")].map(e => e.dataset.id));
   $("inbox").innerHTML = w.inbox.map(m => `
-    <div class="mail" data-id="${m.id}"><div class="from">${esc(m.from)}</div>
-    <div class="subj">${esc(m.subject)}</div><div class="body"></div></div>`).join("");
-  document.querySelectorAll(".mail").forEach(el => el.onclick = async () => {
-    if (!el.classList.contains("open")) {
-      const m = await (await fetch(`/email/${el.dataset.id}`)).json();
-      el.querySelector(".body").textContent = m.body;
-    }
-    el.classList.toggle("open");
+    <div class="mail ${scamIds.has(m.id) ? "scam" : ""}" data-id="${m.id}"><span class="badge">⚠️ POSIBLE ESTAFA</span>
+    <div class="subj">${esc(m.subject)}</div><div class="from">${esc(m.from)}</div><div class="body"></div></div>`).join("");
+  document.querySelectorAll(".mail").forEach(el => {
+    el.onclick = async () => {
+      if (!el.classList.contains("open")) {
+        const m = await (await fetch(`/email/${el.dataset.id}`)).json();
+        el.querySelector(".body").textContent = m.body;
+      }
+      el.classList.toggle("open");
+    };
+    if (open.has(el.dataset.id)) el.click();
   });
+  // Plain-language receipts for Carmen, one per new executed action.
+  for (const e of w.ledger.slice(ledgerSeen)) {
+    if (e.kind === "transfer") addChat(`<span class="ico">✅</span><div><b>Pagado: ${eur(e.amount_eur)} a ${esc(payeeName(e.iban))}</b>${esc(e.concept || "")}</div>`, "notice paid");
+    if (e.kind === "send_email") addChat(`<span class="ico">✉️</span><div><b>Correo enviado a ${esc(e.to)}</b>${esc(e.subject || "")}</div>`, "notice paid");
+    if (e.kind === "add_payee") addChat(`<span class="ico">📒</span><div><b>Cuenta guardada: ${esc(e.name)}</b>${esc(e.iban)}</div>`, "notice paid");
+  }
+  ledgerSeen = w.ledger.length;
   $("ledger").className = w.ledger.length ? "" : "empty";
   $("ledger").innerHTML = w.ledger.length
-    ? w.ledger.map(e => `<div>✔ ${esc(e.kind)} ${esc(e.iban || e.to || e.name || "")} ${e.amount_eur ? esc(e.amount_eur + " EUR") : ""}</div>`).join("")
+    ? w.ledger.map(e => `<div>✔ ${esc(e.kind)} ${esc(e.iban || e.to || "")} ${e.amount_eur ? esc(eur(e.amount_eur)) : ""}</div>`).join("")
     : "nothing executed yet";
 }
 
-let pending = null;
+function clearEmpty() { if ($("guard").querySelector(".empty")) $("guard").innerHTML = ""; }
+
 function renderPending(p) {
-  if ($("guard").querySelector(".empty")) $("guard").innerHTML = "";
+  clearEmpty();
   pending = document.createElement("div");
   pending.className = "card pending";
   pending.innerHTML = `<div class="top"><span class="tool">${esc(p.tool)}</span><span class="verdict"><span class="spinner"></span>CHECKING…</span></div>
     <div class="args">${esc(JSON.stringify(p.arguments))}</div><div class="lat">Asking Decider 2B: is the destination trusted? did Carmen ask for this?</div>`;
   $("guard").appendChild(pending);
-  $("guard").scrollTop = $("guard").scrollHeight;
-}
-
-function showPhone(alert) {
-  $("phone-text").textContent = alert.text;
-  $("phone").classList.add("show");
-  setTimeout(() => $("phone").classList.remove("show"), 12000);
+  scrollDown($("guard"));
 }
 
 function renderGuard(r) {
   if (pending) { pending.remove(); pending = null; }
-  if ($("guard").querySelector(".empty")) $("guard").innerHTML = "";
+  clearEmpty();
   const cls = ["proceed", "llm_allow"].includes(r.final_action) ? "allow" : r.final_action === "confirm" ? "escalate" : "block";
+  const low = Object.entries(r.probabilities).filter(([, p]) => p < 0.5).map(([k]) => WHY[k]).filter(Boolean);
+  const why = cls === "allow" ? "Destination is in Carmen's own records and she asked for it."
+            : cls === "block" ? `Stopped: ${low.join("; ") || "the request did not come from Carmen"}.`
+            : "Unsure: asking Carmen to confirm.";
   const qs = Object.entries(r.probabilities).map(([k, p]) => {
-    const color = p >= 0.5 ? "var(--safe)" : "var(--block)";
+    // Colour by this question's own band: green = confidently safe, red = block, amber = unsure.
+    const b = (window.bands || {})[k] || (window.bands || {}).all || { allow: 0.5, block: 0.5 };
+    const color = p >= b.allow ? "var(--safe)" : p <= b.block ? "var(--block)" : "var(--warn)";
     return `<div class="q"><span>${esc(LABELS[k] || k)}</span><div class="bar"><i style="width:0;background:${color}" data-w="${(p * 100).toFixed(1)}%"></i></div><b>${p.toFixed(2)}</b></div>`;
   }).join("");
-  let lat = `⚡ ${r.decider_latency_ms.toFixed(0)} ms local decision`;
-  if (r.escalation_latency_ms != null) lat += ` · unsure → escalated to Bedrock judge (+${r.escalation_latency_ms.toFixed(0)} ms)`;
+  let lat = `⚡ decided in ${r.decider_latency_ms.toFixed(0)} ms`;
+  if (r.escalation_latency_ms != null) lat += ` · unsure → Bedrock judge (+${r.escalation_latency_ms.toFixed(0)} ms)`;
   const card = document.createElement("div");
   card.className = `card ${cls}`;
   card.innerHTML = `<div class="top"><span class="tool">${esc(r.tool)}</span><span class="verdict">${FINAL[r.final_action]}</span></div>
-    <div class="args">${esc(JSON.stringify(r.arguments))}</div>${qs}<div class="lat">${lat}</div>`;
+    <div class="why">${esc(why)}</div><div class="args">${esc(JSON.stringify(r.arguments))}</div>${qs}<div class="lat">${lat}</div>`;
   $("guard").appendChild(card);
   requestAnimationFrame(() => card.querySelectorAll(".bar i").forEach(i => i.style.width = i.dataset.w));
-  $("guard").scrollTop = $("guard").scrollHeight;
+  scrollDown($("guard"));
+}
+
+function renderFamily(a) {
+  if ($("phone").querySelector(".empty")) $("phone").innerHTML = "";
+  const div = document.createElement("div");
+  div.className = "wa";
+  const [head, ...rest] = a.text.split("\n");
+  div.innerHTML = `<div class="who">🛡️ Asistente de mamá</div><div class="head">⚠️ ${esc(head)}</div>${esc(rest.join("\n"))}<div class="time">${hhmm(a.ts)} ✓✓</div>`;
+  $("phone").appendChild(div);
+  scrollDown($("phone"));
+  // Carmen sees a short, calm notice in her own chat.
+  addChat(`<span class="ico">🛡️</span><div><b>Te he protegido de un correo sospechoso</b>${esc(a.owner_text)}</div>`, "notice shield");
+  if (a.email_id != null) {
+    scamIds.add(a.email_id);
+    const el = document.querySelector(`.mail[data-id="${a.email_id}"]`);
+    if (el) el.classList.add("scam");
+  }
+}
+
+function resetView() {
+  pending = null; thinking = null; ledgerSeen = 0; scamIds = new Set();
+  $("chat").innerHTML = HELLO; $("guard").innerHTML = EMPTY_GUARD; $("phone").innerHTML = EMPTY_PHONE;
 }
 
 const source = new EventSource("/events");
 source.onmessage = (e) => {
   const ev = JSON.parse(e.data);
-  if (ev.kind === "reset") { pending = null; $("phone").classList.remove("show"); $("chat").innerHTML = ""; $("guard").innerHTML = '<div class="empty">Every sensitive tool call is reviewed here before it runs.</div>'; }
+  if (ev.kind === "reset") resetView();
   if (ev.kind === "world") renderWorld(ev.data);
   if (ev.kind === "guard_start") renderPending(ev.data);
   if (ev.kind === "guard") renderGuard(ev.data);
-  if (ev.kind === "family") showPhone(ev.data);
-  if (ev.kind === "user") { addMsg("user", ev.data); thinking = addMsg("thinking", "assistant is working…"); }
-  if (ev.kind === "assistant") { if (thinking) thinking.remove(); addMsg("assistant", ev.data); }
+  if (ev.kind === "family") renderFamily(ev.data);
+  if (ev.kind === "user") { addMsg("user", ev.data); thinking = addChat('Tu asistente está trabajando<span class="dots"></span>', "msg thinking"); }
+  if (ev.kind === "assistant") { if (thinking) thinking.remove(); thinking = null; addMsg("assistant", ev.data); }
 };
 
-$("form").onsubmit = async (e) => {
-  e.preventDefault();
-  const message = $("input").value.trim();
+async function send(message) {
+  message = message.trim();
   if (!message) return;
-  $("send").disabled = true; $("input").value = "";
+  const buttons = document.querySelectorAll("#send, #quick button");
+  buttons.forEach(b => b.disabled = true);
+  $("input").value = "";
   try { await fetch("/chat", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ message }) }); }
-  finally { $("send").disabled = false; }
-};
+  finally { buttons.forEach(b => b.disabled = false); }
+}
+$("form").onsubmit = (e) => { e.preventDefault(); send($("input").value); };
+document.querySelectorAll("#quick button").forEach(b => b.onclick = () => send(b.dataset.msg));
 $("reset").onclick = () => fetch("/reset", { method: "POST" });
+$("bigger").onclick = () => {
+  document.body.classList.toggle("big");
+  try { localStorage.setItem("big", document.body.classList.contains("big") ? "1" : ""); } catch {}
+};
+try { if (localStorage.getItem("big")) document.body.classList.add("big"); } catch {}
 </script>
 </body>
 </html>

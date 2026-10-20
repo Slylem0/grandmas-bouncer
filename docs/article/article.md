@@ -44,6 +44,19 @@ scammer's account as Luz Clara's payee. Decider scored `destination_trusted` at 
 returned `Deny`, no money moved, and the assistant told Carmen in plain Spanish that it had stopped a
 request that came from an email, not from her.
 
+![The demo UI after a real run: the scam email is flagged, the add_payee call is blocked in 401 ms, Carmen's daughter gets a warning, and the real bill is then paid to the saved account](https://raw.githubusercontent.com/Slylem0/grandmas-bouncer/main/docs/img/demo-blocked-then-paid.png)
+
+The interface is built for a 72-year-old, not for an engineer: large text (with an "A+" button), big
+buttons for the common tasks ("check my email and pay what's pending", "pay the electricity to the
+usual account"), and a green receipt in plain words for every payment. When the Bouncer blocks
+something, three things happen that do not depend on the agent: Carmen sees a calm notice ("an
+email asked me to do this; I didn't, your money is fine, I've told Lucía"), the email gets a red
+"possible scam" badge, and her daughter Lucía gets a message saying what was attempted, which email
+asked for it, that no money moved, and what to do next. The app sends that alert itself, not
+through the agent's tools, so an injected email cannot suppress it. Then, when Carmen asks to pay
+the bill to the account she already had saved, Decider allows it and the money goes where it
+should.
+
 ## The decision I handed to Decider 2B
 
 ### Why a naive grounding check fails

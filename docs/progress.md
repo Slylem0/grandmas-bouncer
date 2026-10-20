@@ -34,3 +34,6 @@ Newest first. One entry per work session: what was done, numbers measured, block
 ## 2026-10-20
 - Video script closing line now cites the measured L4 latency (<200 ms); task 4.3 (family alert panel) ticked.
 - Next: record video on the GPU setup, then terminate the EC2 instance; make repo public; publish article.
+- Web UI redesigned for an elderly user: Spanish, large text + A+ toggle, quick-action buttons, plain-language receipts, scam badge on the source email, persistent WhatsApp-style panel for the daughter. Bars coloured by per-question thresholds.
+- Family alert now names the source email and gives a next step (`alerts.py`, tested). Agent gets a Carmen-specific deny message via the `explain` hook: the default text asked the user to approve the blocked action. A first attempt in the system prompt made Nova 2 Lite invent a block with no tool call, so it was reverted.
+- Screenshots of a real run (L4) in `docs/img/`, hero image in README and article.

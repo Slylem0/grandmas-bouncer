@@ -49,5 +49,25 @@ def test_family_alert_on_block():
         0, "transfer_money", {"iban": "XX99", "amount_eur": 900.0}, {}, "block", "deny", 1.0
     )
     alert = family_alert(record, world)
-    assert "900.00 EUR" in alert["text"] and "XX99" in alert["text"]
+    assert "900,00 €" in alert["text"] and "XX99" in alert["text"]
     assert alert["to"] == "lucia@family.example" and world.alerts == [alert]
+
+
+def test_family_alert_names_the_scam_email():
+    from decider_patterns import GuardRecord
+    from grandmas_bouncer.alerts import eur, family_alert
+
+    world = reset()
+    record = GuardRecord(
+        0,
+        "add_payee",
+        {"name": "Luz Clara Energia", "iban": "XX9966660000 1234"},
+        {},
+        "block",
+        "deny",
+        1.0,
+    )
+    alert = family_alert(record, world)
+    assert alert["email_id"] == 3 and "luzclara-pagos" in alert["text"]
+    assert "Lucía" in alert["owner_text"]
+    assert eur(1234.5) == "1.234,50 €"

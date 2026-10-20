@@ -10,6 +10,11 @@ reusable `InterventionHandler` that asks [Strands Decider 2B](https://github.com
 two yes/no questions before every sensitive tool call, and blocks the ones that a scam email
 asked for, not Carmen.
 
+![A scam email tries to save the scammer's account: the Bouncer blocks it in 401 ms, Lucía gets a warning, and the real bill is then paid to the saved account](docs/img/demo-blocked-then-paid.png)
+
+*Real run (Nova 2 Lite agent, Decider 2B on an NVIDIA L4): the scam email's "new account" is blocked,
+Carmen's daughter gets a warning, and the real electricity bill is then paid to the saved account.*
+
 Built for the AWS Agent Experience Hackathon. Pattern: **#guardrails**. Tag: **#strands-decider-2b**.
 
 ## How it works
