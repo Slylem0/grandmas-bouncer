@@ -62,6 +62,18 @@
   .ledger { border-top: 1px solid var(--line); padding: 10px 16px; font-size: 14px; max-height: 30%; overflow-y: auto; }
   .ledger div { font-family: ui-monospace, monospace; font-size: 13px; }
   .empty { color: var(--muted); font-size: 14px; }
+  .card.pending { border-color: var(--accent); background: #eef3fb; }
+  .card.pending .verdict { color: var(--accent); }
+  .spinner { display: inline-block; width: 14px; height: 14px; border: 2px solid var(--accent);
+             border-right-color: transparent; border-radius: 50%; animation: spin .8s linear infinite;
+             vertical-align: -2px; margin-right: 6px; }
+  @keyframes spin { to { transform: rotate(360deg); } }
+  .phone { position: fixed; left: 24px; bottom: 24px; width: 360px; background: #1f2328; color: #fff;
+           border-radius: 18px; padding: 14px 16px; box-shadow: 0 12px 32px #0006; font-size: 15px;
+           transform: translateY(140%); transition: transform .5s cubic-bezier(.2,.9,.3,1.2); z-index: 10; }
+  .phone.show { transform: none; }
+  .phone .app { font-size: 12px; color: #aab; display: flex; justify-content: space-between; margin-bottom: 4px; }
+  .phone b { display: block; margin-bottom: 4px; }
   @media (max-width: 900px) { main { grid-template-columns: 1fr; height: auto; } section { min-height: 300px; } }
 </style>
 </head>
@@ -94,6 +106,8 @@
     <div class="ledger"><strong>What actually happened</strong><div id="ledger" class="empty">nothing executed yet</div></div>
   </section>
 </main>
+<div class="phone" id="phone"><div class="app"><span>📱 Mensajes · para Lucía (hija)</span><span>ahora</span></div>
+  <b>🛡️ Grandma's Bouncer</b><div id="phone-text"></div></div>
 <script>
 const $ = (id) => document.getElementById(id);
 const esc = (s) => String(s).replace(/[&<>"]/g, (c) => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
@@ -133,7 +147,25 @@ function renderWorld(w) {
     : "nothing executed yet";
 }
 
+let pending = null;
+function renderPending(p) {
+  if ($("guard").querySelector(".empty")) $("guard").innerHTML = "";
+  pending = document.createElement("div");
+  pending.className = "card pending";
+  pending.innerHTML = `<div class="top"><span class="tool">${esc(p.tool)}</span><span class="verdict"><span class="spinner"></span>CHECKING…</span></div>
+    <div class="args">${esc(JSON.stringify(p.arguments))}</div><div class="lat">Asking Decider 2B: is the destination trusted? did Carmen ask for this?</div>`;
+  $("guard").appendChild(pending);
+  $("guard").scrollTop = $("guard").scrollHeight;
+}
+
+function showPhone(alert) {
+  $("phone-text").textContent = alert.text;
+  $("phone").classList.add("show");
+  setTimeout(() => $("phone").classList.remove("show"), 12000);
+}
+
 function renderGuard(r) {
+  if (pending) { pending.remove(); pending = null; }
   if ($("guard").querySelector(".empty")) $("guard").innerHTML = "";
   const cls = ["proceed", "llm_allow"].includes(r.final_action) ? "allow" : r.final_action === "confirm" ? "escalate" : "block";
   const qs = Object.entries(r.probabilities).map(([k, p]) => {
@@ -154,9 +186,11 @@ function renderGuard(r) {
 const source = new EventSource("/events");
 source.onmessage = (e) => {
   const ev = JSON.parse(e.data);
-  if (ev.kind === "reset") { $("chat").innerHTML = ""; $("guard").innerHTML = '<div class="empty">Every sensitive tool call is reviewed here before it runs.</div>'; }
+  if (ev.kind === "reset") { pending = null; $("phone").classList.remove("show"); $("chat").innerHTML = ""; $("guard").innerHTML = '<div class="empty">Every sensitive tool call is reviewed here before it runs.</div>'; }
   if (ev.kind === "world") renderWorld(ev.data);
+  if (ev.kind === "guard_start") renderPending(ev.data);
   if (ev.kind === "guard") renderGuard(ev.data);
+  if (ev.kind === "family") showPhone(ev.data);
   if (ev.kind === "user") { addMsg("user", ev.data); thinking = addMsg("thinking", "assistant is working…"); }
   if (ev.kind === "assistant") { if (thinking) thinking.remove(); addMsg("assistant", ev.data); }
 };

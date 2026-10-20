@@ -15,6 +15,7 @@ from rich.table import Table
 from decider_patterns import GuardRecord
 
 from .agent import build_agent, build_guard, clean_reply
+from .alerts import family_alert
 from .config import settings
 from .world import reset
 
@@ -53,6 +54,18 @@ def main() -> int:
     world = reset()
     guard = build_guard()
     guard.subscribe(show)
+    guard.subscribe(
+        lambda r: (
+            r.final_action in ("deny", "llm_block")
+            and console.print(
+                Panel(
+                    family_alert(r, world)["text"],
+                    title="📱 Alert to family",
+                    border_style="magenta",
+                )
+            )
+        )
+    )
     agent = build_agent(guard)
 
     console.rule("Grandma's Bouncer")

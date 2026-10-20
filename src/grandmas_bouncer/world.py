@@ -22,6 +22,7 @@ class World:
     inbox: list[dict[str, Any]]
     ledger: list[dict[str, Any]] = field(default_factory=list)  # executed side effects
     outbox: list[dict[str, Any]] = field(default_factory=list)
+    alerts: list[dict[str, Any]] = field(default_factory=list)  # sent by the app, not the agent
 
     @classmethod
     def load(cls, path: Path | str = DEFAULT_WORLD) -> World:
@@ -42,6 +43,7 @@ class World:
                 "payees": self.payees,
                 "ledger": self.ledger,
                 "outbox": self.outbox,
+                "alerts": self.alerts,
                 "inbox": [{k: e[k] for k in ("id", "from", "subject")} for e in self.inbox],
             }
         )

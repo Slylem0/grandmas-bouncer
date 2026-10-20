@@ -173,10 +173,13 @@ def test_guard_is_fail_closed():
 
 
 def test_listeners_receive_records():
-    seen = []
+    seen, started = [], []
     g = guard(SAFE)
     g.subscribe(seen.append)
+    g.subscribe_start(lambda tool, args: started.append(tool))
     g.before_tool_call(event("transfer_money"))
+    g.before_tool_call(event("read_email"))  # unprotected: no review, no events
+    assert started == ["transfer_money"]
     assert len(seen) == 1 and seen[0].tool == "transfer_money"
 
 

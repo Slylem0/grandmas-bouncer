@@ -105,9 +105,15 @@ class GroundingGuard(InterventionHandler):
         self.explain = explain
         self.log: list[GuardRecord] = []
         self._listeners: list[Callable[[GuardRecord], None]] = []
+        self._start_listeners: list[Callable[[str, dict[str, Any]], None]] = []
 
     def subscribe(self, listener: Callable[[GuardRecord], None]) -> None:
+        """Called with every decision once it is made."""
         self._listeners.append(listener)
+
+    def subscribe_start(self, listener: Callable[[str, dict[str, Any]], None]) -> None:
+        """Called with (tool, arguments) when a review starts, e.g. to show progress in a UI."""
+        self._start_listeners.append(listener)
 
     def _emit(self, record: GuardRecord) -> None:
         self.log.append(record)
@@ -154,6 +160,8 @@ class GroundingGuard(InterventionHandler):
         if tool not in self.protected_tools:
             return Proceed(reason="tool not protected")
         arguments = event.tool_use.get("input") or {}
+        for listener in self._start_listeners:
+            listener(tool, arguments)
         record = self.review(event.agent.messages, tool, arguments)
         self._emit(record)
         if record.final_action in ("proceed", "llm_allow"):

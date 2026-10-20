@@ -20,6 +20,7 @@ from pydantic import BaseModel
 from decider_patterns import GuardRecord
 
 from ..agent import build_agent, build_guard, clean_reply
+from ..alerts import family_alert
 from ..config import settings
 from ..world import current_world, reset
 
@@ -38,6 +39,9 @@ class Session:
         self.events.clear()
         self.guard = build_guard()
         self.guard.subscribe(self.on_guard)
+        self.guard.subscribe_start(
+            lambda tool, args: self.push("guard_start", {"tool": tool, "arguments": args})
+        )
         self.agent = build_agent(self.guard)
         self.push("world", current_world().snapshot())
 
@@ -46,6 +50,8 @@ class Session:
 
     def on_guard(self, record: GuardRecord) -> None:
         self.push("guard", asdict(record))
+        if record.final_action in ("deny", "llm_block"):
+            self.push("family", family_alert(record, current_world()))
 
     def chat(self, message: str) -> str:
         with self.lock:

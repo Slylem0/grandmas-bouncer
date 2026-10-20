@@ -38,3 +38,16 @@ def test_read_tools_have_no_side_effects():
 def test_protected_and_trusted_sets():
     assert {"transfer_money", "add_payee", "send_email"} == tools.PROTECTED_TOOLS
     assert "read_email" not in tools.TRUSTED_TOOLS
+
+
+def test_family_alert_on_block():
+    from decider_patterns import GuardRecord
+    from grandmas_bouncer.alerts import family_alert
+
+    world = reset()
+    record = GuardRecord(
+        0, "transfer_money", {"iban": "XX99", "amount_eur": 900.0}, {}, "block", "deny", 1.0
+    )
+    alert = family_alert(record, world)
+    assert "900.00 EUR" in alert["text"] and "XX99" in alert["text"]
+    assert alert["to"] == "lucia@family.example" and world.alerts == [alert]
