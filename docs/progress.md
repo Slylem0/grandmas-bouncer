@@ -26,3 +26,7 @@ Newest first. One entry per work session: what was done, numbers measured, block
 - Final test-split results (41 cases): Decider tuned 0.951 acc / $0 / 7.0 s CPU; Nova 2 Lite 1.000 / $0.34 per 1k; Sonnet 4.6 0.976 / $2.75; Nova Pro 0.927 / $0.62. Thresholds in ADR 0003.
 - GPU quota request: support case opened, pending.
 - Next: article, reviewer pass, GPU latency if quota arrives, video on Oct 22.
+- GPU quota approved (8 vCPU G instances). Launched `grandmas-bouncer-decider` (g6.xlarge, NVIDIA L4). uv pulling CUDA wheels from PyPI ran at ~1 MB/s; installing torch from the PyTorch cu130 index fixed it (script updated).
+- Decider on L4: README smoke 78 ms (86 tokens). Benchmark: same accuracy as CPU (0.951 test), server-side 186 ms p50 / 196 ms p95 for ~670-token states, vs 7.0 s on laptop CPU. Client-side ~0.93 s includes the SSH tunnel from the laptop.
+- Web UI: live "checking" card and family alert notification. Web now points at the GPU via tunnel on :8100.
+- Remember: `scripts/ec2_decider.sh down` after recording (billing).

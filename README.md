@@ -41,13 +41,15 @@ flowchart LR
 
 64 labelled cases (26 legit, 28 injection attacks in 7 styles, 10 hard cases; English and
 Spanish). Thresholds tuned on the dev split (23 cases); numbers below are the **held-out test split
-(41 cases)**. Decider 2B v1 (`strands-decider-2B-qwen3.5-v1-2610`) on a **laptop CPU** (the 4 GB
-laptop GPU cannot hold it); Bedrock judges get the same labelled state and the same two questions.
+(41 cases)**. Decider 2B v1 (`strands-decider-2B-qwen3.5-v1-2610`) served on an **EC2 g6.xlarge
+(NVIDIA L4)**, and the same model on a laptop CPU for comparison; Bedrock judges get the same
+labelled state and the same two questions.
 Full table, per-case probabilities and run metadata: [`benchmarks/results/summary.md`](benchmarks/results/summary.md).
 
 | judge | accuracy | attacks blocked | legit falsely blocked | USD per 1k checks | p50 latency |
 |---|---|---|---|---|---|
-| **Decider 2B, local, tuned** | **0.951** | 0.955 | 0.053 | **0** (no API cost) | 7.0 s (CPU) |
+| **Decider 2B, tuned (L4 GPU)** | **0.951** | 0.955 | 0.053 | **0** (no API cost) | **0.19 s** (model time) |
+| same, on a laptop CPU | 0.951 | 0.955 | 0.053 | 0 | 7.0 s |
 | Amazon Nova 2 Lite | 1.000 | 1.000 | 0.000 | 0.34 | 2.5 s |
 | Claude Sonnet 4.6 | 0.976 | 1.000 | 0.053 | 2.75 | 5.0 s |
 | Amazon Nova Pro | 0.927 | 1.000 | 0.158 | 0.62 | 1.3 s |
@@ -60,8 +62,10 @@ What we learned:
   question on a dev split was essential (see [ADR 0003](docs/decisions/0003-cascade-thresholds.md)).
 - Question wording matters: concrete examples of "a task she asked for" lifted the second
   question's dev accuracy from 0.739 to 0.870 ([ADR 0004](docs/decisions/0004-question-wording.md)).
-- Latency is hardware-bound: ~7 s per decision on a laptop CPU for ~670-token states. Upstream
-  reports 115 ms median on an RTX 3090.
+- Latency is hardware-bound: for ~670-token states with two questions, Decider takes **186 ms
+  (p50) / 196 ms (p95)** on an NVIDIA L4, versus 7.0 s on a laptop CPU, and it is faster than every
+  Bedrock judge here (1.3-5.0 s p50, measured from the same laptop). Decider times are server-side
+  model time; from my laptop the SSH tunnel to us-east-1 added ~0.7 s.
 
 LLM prices are on-demand list prices from third-party aggregators (see `benchmarks/pricing.yaml`).
 
@@ -121,7 +125,8 @@ reachable only through an SSH tunnel (`scripts/ec2_decider.sh tunnel`; `down` to
 - Decider 2B is an experimental model and this is a demo, not a fraud-prevention product.
 - All people, companies and account numbers are fictional.
 - Thresholds are tuned on 64 synthetic cases; tune on your own traffic.
-- On a 4 GB laptop GPU the model does not fit; on CPU each decision takes seconds.
+- On a 4 GB laptop GPU the model does not fit; on CPU each decision takes seconds. A small cloud GPU
+  (`scripts/ec2_decider.sh`) brings it under 200 ms.
 
 ## License
 

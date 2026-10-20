@@ -1,19 +1,4 @@
 {
-  "decider": {
-    "status": "ok",
-    "model": "strands-decider-2B-qwen3.5-v1-2610",
-    "checkpoint": "StrandsAgents/strands-decider-2B-qwen3.5-v1-2610",
-    "base_model": "Qwen/Qwen3.5-2B-Base",
-    "num_slots": 24,
-    "max_length": 4096,
-    "temperature": 1.0545210242263665,
-    "device": "cpu",
-    "prefix_cache": true,
-    "vision": false,
-    "cases": 64,
-    "seconds": 439.5,
-    "date": "2026-10-19"
-  },
   "llm-nova": {
     "model_id": "us.amazon.nova-2-lite-v1:0",
     "cases": 64,
@@ -31,5 +16,37 @@
     "cases": 64,
     "seconds": 326.7,
     "date": "2026-10-19"
+  },
+  "decider-cpu": {
+    "status": "ok",
+    "model": "strands-decider-2B-qwen3.5-v1-2610",
+    "checkpoint": "StrandsAgents/strands-decider-2B-qwen3.5-v1-2610",
+    "base_model": "Qwen/Qwen3.5-2B-Base",
+    "num_slots": 24,
+    "max_length": 4096,
+    "temperature": 1.0545210242263665,
+    "device": "cpu",
+    "prefix_cache": true,
+    "vision": false,
+    "cases": 64,
+    "seconds": 439.5,
+    "date": "2026-10-19",
+    "hardware": "laptop CPU (12 threads, 23 GB RAM); RTX 3050 4 GB could not hold the model"
+  },
+  "decider": {
+    "status": "ok",
+    "model": "strands-decider-2B-qwen3.5-v1-2610",
+    "checkpoint": "StrandsAgents/strands-decider-2B-qwen3.5-v1-2610",
+    "base_model": "Qwen/Qwen3.5-2B-Base",
+    "num_slots": 24,
+    "max_length": 4096,
+    "temperature": 1.0545210242263665,
+    "device": "cuda",
+    "prefix_cache": true,
+    "vision": false,
+    "cases": 64,
+    "seconds": 69.7,
+    "date": "2026-10-19",
+    "hardware": "EC2 g6.xlarge, NVIDIA L4 24 GB, us-east-1; client on a laptop via SSH tunnel"
   }
 }

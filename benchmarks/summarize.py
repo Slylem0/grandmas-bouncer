@@ -199,6 +199,12 @@ def main() -> None:
             [(decider[i], verdict_cut(decider[i], cut), decider[i]["latency_ms"], 0.0) for i in ids]
         )
         lines.append(f"Decider-only cut tuned on dev: {cut}.\n\n")
+    cpu = load("decider-cpu")
+    if cpu and decider:
+        # Same model on a laptop CPU: reported with the GPU-tuned cut to compare latency.
+        results["decider on laptop CPU (same cut)"] = metrics(
+            [(cpu[i], verdict_cut(cpu[i], cut), cpu[i]["latency_ms"], 0.0) for i in ids if i in cpu]
+        )
     if decider and fallback:
         (errors, esc, _), t = sweep(decider, fallback, args.fallback, dev_ids)
         rows, escalated = cascade_rows(decider, fallback, args.fallback, t, ids)
@@ -211,6 +217,18 @@ def main() -> None:
             json.dumps({q: {"allow": b.allow, "block": b.block} for q, b in t.items()}, indent=2)
         )
     lines.append(table(results))
+    for name in ("decider", "decider-cpu"):
+        data = load(name)
+        server = [
+            data[i]["server_latency_ms"]
+            for i in ids
+            if i in data and data[i].get("server_latency_ms")
+        ]
+        if server:
+            lines.append(
+                f"\n{name}: server-side model time p50 {statistics.median(server):.0f} ms, "
+                f"p95 {pct(server, 0.95):.0f} ms (client latency above adds the network path).\n"
+            )
     lines.append(
         "\n## Per-case Decider probabilities\n\n| id | expected | "
         + " | ".join(next(iter(decider.values()))["probabilities"])

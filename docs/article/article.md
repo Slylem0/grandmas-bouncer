@@ -101,20 +101,25 @@ split (41 cases)**. The Bedrock judges received the same labelled state and the 
 
 | judge | accuracy | attacks blocked | legit falsely blocked | USD per 1k checks | p50 latency |
 |---|---|---|---|---|---|
-| **Decider 2B, local, tuned** | **0.951** | 0.955 | 0.053 | **0** | 7.0 s (laptop CPU) |
+| **Decider 2B, tuned (NVIDIA L4)** | **0.951** | 0.955 | 0.053 | **0** | **0.19 s** |
+| same model, laptop CPU | 0.951 | 0.955 | 0.053 | 0 | 7.0 s |
 | Amazon Nova 2 Lite | 1.000 | 1.000 | 0.000 | 0.34 | 2.5 s |
 | Claude Sonnet 4.6 | 0.976 | 1.000 | 0.053 | 2.75 | 5.0 s |
 | Amazon Nova Pro | 0.927 | 1.000 | 0.158 | 0.62 | 1.3 s |
 
 LLM costs are computed from returned token usage and on-demand list prices (from third-party price
-aggregators, listed with sources in the repo). Decider has no API cost: it runs on my machine.
+aggregators, listed with sources in the repo). Decider has no per-call API cost: it runs on
+hardware I control. Its latency is server-side model time; the Bedrock latencies were measured from
+my laptop.
 
-- **A 2B decision model, local and free, scored above Nova Pro and 2.5 points below Claude Sonnet 4.6.**
+- **A 2B decision model with no per-call cost scored above Nova Pro and 2.5 points below Claude
+  Sonnet 4.6, and decided in 186 ms (p50), faster than every LLM judge.**
 - Its two test misses are both hard cases: Carmen re-confirming a new account in her own words after
   verifying it by phone, and an *extra* 500 EUR "advance" to a trusted payee that only an email asked for.
-- **Latency is my weak point.** My laptop GPU has 4 GB and the model did not fit (CUDA out of memory),
-  so every number above is from a laptop CPU: ~7 s for a ~670-token state. Upstream reports 115 ms median
-  on an RTX 3090. On CPU this guard costs time, not money.
+- **Hardware matters.** My laptop GPU has 4 GB and the model did not fit (CUDA out of memory). On the
+  laptop CPU a decision took ~7 s. On an EC2 g6.xlarge (NVIDIA L4) the same model, same answers,
+  took 186 ms p50 / 196 ms p95: 37x faster. The repo has a script that launches that instance with no
+  open ports except SSH and tunnels to it.
 
 ## The reusable pattern
 

@@ -32,7 +32,8 @@ user_data() {
 #!/bin/bash
 set -eux
 sudo -u ubuntu bash -lc 'curl -LsSf https://astral.sh/uv/install.sh | sh'
-sudo -u ubuntu bash -lc '~/.local/bin/uv venv ~/decider --python 3.12 && ~/.local/bin/uv pip install -p ~/decider strands-decider'
+# torch from the PyTorch index first: pulling the CUDA wheels through PyPI was ~1 MB/s from EC2.
+sudo -u ubuntu bash -lc '~/.local/bin/uv venv ~/decider --python 3.12 && ~/.local/bin/uv pip install -p ~/decider --index-url https://download.pytorch.org/whl/cu130 torch && ~/.local/bin/uv pip install -p ~/decider strands-decider'
 cat >/etc/systemd/system/decider.service <<UNIT
 [Unit]
 Description=Strands Decider
@@ -74,8 +75,10 @@ up() {
 
 tunnel() {
   local id; id=$(instance_id)
-  echo "tunnel localhost:8099 -> $id (Ctrl-C to stop)"
-  exec ssh -i "$KEY_FILE" -o StrictHostKeyChecking=accept-new -N -L 8099:127.0.0.1:8099 "ubuntu@$(public_ip "$id")"
+  local port="${LOCAL_PORT:-8099}"
+  echo "tunnel localhost:${port} -> $id:8099 (Ctrl-C to stop); set STRANDS_DECIDER_URL=http://127.0.0.1:${port}"
+  exec ssh -i "$KEY_FILE" -o StrictHostKeyChecking=accept-new -o ServerAliveInterval=30 -N \
+    -L "${port}:127.0.0.1:8099" "ubuntu@$(public_ip "$id")"
 }
 
 status() {
