@@ -35,7 +35,7 @@ Each task names its owner subagent (see `.claude/agents/`). Tick boxes as you go
 ## Phase 4: Escalation + web UI (D3) — owner `agent-builder`
 - [x] 4.1 Escalation `llm` via Bedrock judge, and `human` via `Confirm`. _Req 4.3_
 - [x] 4.2 FastAPI web app + single-page UI with three panels and SSE. _Req 7.3-7.4_
-- [ ] 4.3 Family alert panel. _Req 7.5 (P2)_
+- [x] 4.3 Family alert panel. _Req 7.5 (P2)_
 
 ## Phase 5: Ship (D3-D4) — owner `storyteller`, review by `reviewer`
 - [x] 5.1 `decider_patterns/README.md` recipe + `examples/minimal_guard.py` (< 40 lines, non-banking). _Req 10_

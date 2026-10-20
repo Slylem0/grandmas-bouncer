@@ -15,10 +15,10 @@ subtitles). Numbers on screen must come from `benchmarks/results/summary.md`.
 | 1:20-1:50 | Diagram: Agent -> GroundingGuard (Decider) -> tool. Then the rendered state with TRUSTED / UNTRUSTED labels, highlighting the scam IBAN inside an UNTRUSTED line. | "The trick: a naive check asks 'is this account in the conversation?' It is: the scammer put it there. So every line is labelled by where it came from. Decider is asked: does the destination come from a TRUSTED line? It doesn't generate text, it returns a calibrated probability, and my code decides." |
 | 1:50-2:15 | Benchmark table (test split): Decider alone, Nova 2 Lite, cascade. Highlight escalation % and cost per 1k checks. | "On 64 labelled cases, I calibrated thresholds on a dev split and measured on a held-out test split. Decider decides most calls locally; only the unsure ones escalate to a Bedrock LLM. Same accuracy, a fraction of the LLM calls and cost." |
 | 2:15-2:35 | Code: `GroundingGuard(...)` + `Agent(interventions=[guard])`, then the pattern README. | "The guard is a reusable Strands InterventionHandler. Three lines to protect your own agent's tools." |
-| 2:35-2:50 | Honest note + repo URL + tags. | "Decider 2B is experimental and on my laptop CPU it takes seconds; on a GPU it's around a hundred milliseconds. Code and benchmark are open: github.com/Slylem0/grandmas-bouncer." |
+| 2:35-2:50 | Honest note + repo URL + tags. | "Decider 2B is experimental. On a cloud GPU each decision takes under 200 milliseconds and costs nothing per call. Code and benchmark are open: github.com/Slylem0/grandmas-bouncer." |
 
 Checklist before recording:
-- [ ] Decider server up (CPU or EC2 tunnel), `curl localhost:8099/health` ok.
+- [ ] Decider server up (EC2 GPU tunnel on :8100 for recording; CPU as fallback), `/config` shows `decider_device: cuda`.
 - [ ] `uv run python -m grandmas_bouncer.web`, page loads, Reset pressed.
 - [ ] Do one dry run (the agent is an LLM: if it does not take the bait in a take, Reset and retry; never fake the result).
 - [ ] Final numbers copied from `benchmarks/results/summary.md`.

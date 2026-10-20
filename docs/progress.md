@@ -30,3 +30,7 @@ Newest first. One entry per work session: what was done, numbers measured, block
 - Decider on L4: README smoke 78 ms (86 tokens). Benchmark: same accuracy as CPU (0.951 test), server-side 186 ms p50 / 196 ms p95 for ~670-token states, vs 7.0 s on laptop CPU. Client-side ~0.93 s includes the SSH tunnel from the laptop.
 - Web UI: live "checking" card and family alert notification. Web now points at the GPU via tunnel on :8100.
 - Remember: `scripts/ec2_decider.sh down` after recording (billing).
+
+## 2026-10-20
+- Video script closing line now cites the measured L4 latency (<200 ms); task 4.3 (family alert panel) ticked.
+- Next: record video on the GPU setup, then terminate the EC2 instance; make repo public; publish article.
