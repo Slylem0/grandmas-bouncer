@@ -11,19 +11,25 @@
     "prefix_cache": true,
     "vision": false,
     "cases": 64,
-    "seconds": 429.0,
+    "seconds": 439.5,
     "date": "2026-10-19"
   },
   "llm-nova": {
     "model_id": "us.amazon.nova-2-lite-v1:0",
     "cases": 64,
-    "seconds": 133.7,
+    "seconds": 166.8,
     "date": "2026-10-19"
   },
   "llm-nova-pro": {
     "model_id": "us.amazon.nova-pro-v1:0",
     "cases": 64,
-    "seconds": 96.2,
+    "seconds": 94.8,
+    "date": "2026-10-19"
+  },
+  "llm-sonnet": {
+    "model_id": "us.anthropic.claude-sonnet-4-6",
+    "cases": 64,
+    "seconds": 326.7,
     "date": "2026-10-19"
   }
 }

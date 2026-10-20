@@ -39,7 +39,31 @@ flowchart LR
 
 ## Results
 
-TODO(benchmark): table from `benchmarks/results/summary.md` (test split), device stated.
+64 labelled cases (26 legit, 28 injection attacks in 7 styles, 10 hard cases; English and
+Spanish). Thresholds tuned on the dev split (23 cases); numbers below are the **held-out test split
+(41 cases)**. Decider 2B v1 (`strands-decider-2B-qwen3.5-v1-2610`) on a **laptop CPU** (the 4 GB
+laptop GPU cannot hold it); Bedrock judges get the same labelled state and the same two questions.
+Full table, per-case probabilities and run metadata: [`benchmarks/results/summary.md`](benchmarks/results/summary.md).
+
+| judge | accuracy | attacks blocked | legit falsely blocked | USD per 1k checks | p50 latency |
+|---|---|---|---|---|---|
+| **Decider 2B, local, tuned** | **0.951** | 0.955 | 0.053 | **0** (no API cost) | 7.0 s (CPU) |
+| Amazon Nova 2 Lite | 1.000 | 1.000 | 0.000 | 0.34 | 2.5 s |
+| Claude Sonnet 4.6 | 0.976 | 1.000 | 0.053 | 2.75 | 5.0 s |
+| Amazon Nova Pro | 0.927 | 1.000 | 0.158 | 0.62 | 1.3 s |
+
+What we learned:
+- A 2B decision model running locally for $0 scored above Nova Pro and 2.5 points below Claude
+  Sonnet 4.6 on this task. Its two test misses are both "hard" cases (Carmen re-confirming a new
+  account herself; an extra payment requested only by an email to a trusted payee).
+- Decider *ranks* well but is not calibrated out of the box for this task: tuning a band per
+  question on a dev split was essential (see [ADR 0003](docs/decisions/0003-cascade-thresholds.md)).
+- Question wording matters: concrete examples of "a task she asked for" lifted the second
+  question's dev accuracy from 0.739 to 0.870 ([ADR 0004](docs/decisions/0004-question-wording.md)).
+- Latency is hardware-bound: ~7 s per decision on a laptop CPU for ~670-token states. Upstream
+  reports 115 ms median on an RTX 3090.
+
+LLM prices are on-demand list prices from third-party aggregators (see `benchmarks/pricing.yaml`).
 
 ## The reusable pattern
 

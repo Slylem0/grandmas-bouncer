@@ -18,3 +18,11 @@ Newest first. One entry per work session: what was done, numbers measured, block
 - Benchmark (64 cases; test split 41): Decider ranks well but probabilities are not calibrated for this task (legit `destination_trusted` 0.63-0.95, attacks 0.15-0.44). Per-question bands tuned on dev.
   Test: decider-only tuned 95.1% acc / 0 false blocks; Nova 2 Lite 97.6%; cascade Decider -> Nova 2 Lite 100% with 7% escalated, $0.025 vs $0.35 per 1k checks. Latency is the weak point on CPU.
 - Next: decide on GPU (quota request / other), agent end-to-end demo run, harder scenarios.
+
+## 2026-10-20
+- Sonnet 4.6 enabled after the Anthropic use-case form (Marketplace agreement email received).
+- Fixed judge bug: `maxTokens=100` truncated Sonnet's answer and the parser read it as "unsafe"; now 400 tokens, JSON first, parse errors flagged and reported. Added adaptive retries after a Bedrock throttling crash.
+- Question lab (dev): chose concrete `user_requested_action` wording (ADR 0004).
+- Final test-split results (41 cases): Decider tuned 0.951 acc / $0 / 7.0 s CPU; Nova 2 Lite 1.000 / $0.34 per 1k; Sonnet 4.6 0.976 / $2.75; Nova Pro 0.927 / $0.62. Thresholds in ADR 0003.
+- GPU quota request: support case opened, pending.
+- Next: article, reviewer pass, GPU latency if quota arrives, video on Oct 22.
