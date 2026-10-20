@@ -7,13 +7,12 @@ rates, latency and cost, plus the Decider -> LLM cascade and a threshold sweep o
 from __future__ import annotations
 
 import argparse
+import itertools
 import json
 import statistics
 from pathlib import Path
 
 import yaml
-
-import itertools
 
 from decider_patterns import Thresholds, decide
 

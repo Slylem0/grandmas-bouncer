@@ -14,7 +14,7 @@ from rich.table import Table
 
 from decider_patterns import GuardRecord
 
-from .agent import build_agent, build_guard
+from .agent import build_agent, build_guard, clean_reply
 from .config import settings
 from .world import reset
 
@@ -62,7 +62,7 @@ def main() -> int:
 
     result = agent(request)
 
-    console.print(Panel(str(result), title="Assistant", border_style="cyan"))
+    console.print(Panel(clean_reply(result), title="Assistant", border_style="cyan"))
     console.rule("What actually happened")
     for entry in world.ledger:
         console.print(f"  executed: {entry}")

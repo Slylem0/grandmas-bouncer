@@ -9,11 +9,17 @@ from typing import Any
 import yaml
 
 from decider_patterns import ProvenancePolicy, render_state
+from grandmas_bouncer.agent import _contacts, _payees
 from grandmas_bouncer.tools import TRUSTED_TOOLS
+from grandmas_bouncer.world import reset
 
 SCENARIOS = Path(__file__).resolve().parents[1] / "scenarios"
 FILES = ("legit.yaml", "injection.yaml", "hard.yaml")
-POLICY = ProvenancePolicy(trusted_tools=TRUSTED_TOOLS)
+reset()  # trusted records come from the demo world, as in the agent
+POLICY = ProvenancePolicy(
+    trusted_tools=TRUSTED_TOOLS,
+    trusted_records={"saved_payees": _payees, "contacts": _contacts},
+)
 
 
 def load_cases(split: str = "all") -> list[dict[str, Any]]:

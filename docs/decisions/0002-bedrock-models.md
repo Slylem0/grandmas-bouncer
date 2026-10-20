@@ -7,3 +7,6 @@
 
 ## Update 2026-10-19 (later)
 Sonnet 4.6 started failing with "Model use case details have not been submitted" (it worked once earlier, likely before enforcement). Until Pablo submits the Anthropic use-case form in the Bedrock console, the agent default is `us.amazon.nova-pro-v1:0` and the benchmark baselines are Nova 2 Lite (and Nova Pro). Set `BOUNCER_AGENT_MODEL=us.anthropic.claude-sonnet-4-6` to switch back.
+
+## Update 2026-10-19 (demo agent)
+In end-to-end runs Nova Pro refused the bank-account-change scam on its own, so the guard never saw the attack. Nova 2 Lite followed it (`add_payee` with the scam IBAN) and the guard blocked it. Default agent is now `us.amazon.nova-2-lite-v1:0`. The article must say so: a stronger model catches some scams itself, but the guard is the layer that does not depend on the model being careful, the same reasoning as the upstream example's deliberately eager agent.

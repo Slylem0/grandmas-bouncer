@@ -9,7 +9,7 @@ line by where it came from turns the question into "are they grounded in TRUSTED
 from __future__ import annotations
 
 import json
-from collections.abc import Iterable
+from collections.abc import Callable, Iterable, Mapping
 from dataclasses import dataclass, field
 from typing import Any
 
@@ -24,6 +24,10 @@ class ProvenancePolicy:
     # ~3k tokens: leaves room for the questions inside Decider's 4096-token window.
     max_chars: int = 9000
     max_line_chars: int = 1500
+    # Records the guard reads itself on every decision (e.g. saved payees, contacts), so a call
+    # is judged against them even when the agent never looked them up. The attacker cannot
+    # reach these: they come from your code, not from the conversation.
+    trusted_records: Mapping[str, Callable[[], str]] = field(default_factory=dict)
 
 
 def _tool_result_text(content: Iterable[dict[str, Any]]) -> str:
@@ -98,7 +102,8 @@ def render_state(
     tool_input: dict[str, Any],
     policy: ProvenancePolicy,
 ) -> str:
-    lines = _fit(label_messages(messages, policy), policy)
+    records = [(f"TRUSTED: {name} record", read()) for name, read in policy.trusted_records.items()]
+    lines = _fit(records + label_messages(messages, policy), policy)
     body = "\n".join(f"[{label}] {text}" for label, text in lines) or "(no conversation yet)"
     return (
         "An AI assistant acts for a user. Each line below is labelled with where it came from. "

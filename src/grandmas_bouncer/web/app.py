@@ -19,7 +19,7 @@ from pydantic import BaseModel
 
 from decider_patterns import GuardRecord
 
-from ..agent import build_agent, build_guard
+from ..agent import build_agent, build_guard, clean_reply
 from ..config import settings
 from ..world import current_world, reset
 
@@ -51,7 +51,7 @@ class Session:
         with self.lock:
             self.push("user", message)
             try:
-                reply = str(self.agent(message))
+                reply = clean_reply(self.agent(message))
             except Exception as exc:  # noqa: BLE001 - surface any agent failure in the UI
                 reply = f"(error: {exc})"
             self.push("assistant", reply)

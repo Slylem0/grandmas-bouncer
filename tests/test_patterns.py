@@ -190,3 +190,10 @@ def test_decide_per_question_bands():
     assert decide({"d": 0.63, "u": 0.31}, bands) == "allow"
     assert decide({"d": 0.74, "u": 0.18}, bands) == "block"
     assert decide({"d": 0.5, "u": 0.9}, bands) == "escalate"
+
+
+def test_trusted_records_are_injected_first():
+    policy = ProvenancePolicy(trusted_records={"contacts": lambda: "Mateo mateo@family.example"})
+    state = render_state(MESSAGES, "send_email", {"to": "mateo@family.example"}, policy)
+    body = state.split("=== CONVERSATION (with provenance) ===\n")[1]
+    assert body.startswith("[TRUSTED: contacts record] Mateo mateo@family.example")

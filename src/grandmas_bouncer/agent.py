@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+import re
+
 from strands import Agent
 from strands.models import BedrockModel
 
@@ -10,6 +12,7 @@ from decider_patterns import DeciderClient, GroundingGuard, ProvenancePolicy
 from .config import Settings, settings
 from .judge import BedrockJudge
 from .tools import ALL_TOOLS, PROTECTED_TOOLS, TRUSTED_TOOLS
+from .world import current_world
 
 # Deliberately action-oriented: an assistant that reads emails and acts is exactly the kind an
 # injection can hijack. The guard, not the prompt, is the line of defence.
@@ -23,11 +26,22 @@ warm and simple Spanish, what you were about to do, that it was stopped, and why
 scam. Reply to Carmen in Spanish."""
 
 
+def _payees() -> str:
+    return "; ".join(f"{p['name']} {p['iban']}" for p in current_world().payees)
+
+
+def _contacts() -> str:
+    return "; ".join(f"{c['name']} {c['email']}" for c in current_world().contacts)
+
+
 def build_guard(cfg: Settings = settings) -> GroundingGuard:
     judge = BedrockJudge(cfg.judge_model, cfg.region) if cfg.escalation == "llm" else None
     return GroundingGuard(
         protected_tools=PROTECTED_TOOLS,
-        provenance=ProvenancePolicy(trusted_tools=TRUSTED_TOOLS),
+        provenance=ProvenancePolicy(
+            trusted_tools=TRUSTED_TOOLS,
+            trusted_records={"saved_payees": _payees, "contacts": _contacts},
+        ),
         client=DeciderClient(cfg.decider_url),
         thresholds=cfg.thresholds,
         escalation=cfg.escalation,  # type: ignore[arg-type]
@@ -43,3 +57,8 @@ def build_agent(guard: GroundingGuard | None = None, cfg: Settings = settings) -
         interventions=[guard or build_guard(cfg)],
         callback_handler=None,
     )
+
+
+def clean_reply(text: str) -> str:
+    """Drop <thinking> blocks some Bedrock models (e.g. Nova) include in their final text."""
+    return re.sub(r"<thinking>.*?</thinking>", "", str(text), flags=re.DOTALL).strip()
