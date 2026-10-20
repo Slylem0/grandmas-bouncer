@@ -1,10 +1,10 @@
 {
   "destination_trusted": {
-    "allow": 0.7,
-    "block": 0.45
+    "allow": 0.6,
+    "block": 0.5
   },
   "user_requested_action": {
-    "allow": 0.3,
+    "allow": 0.25,
     "block": 0.02
   }
 }
