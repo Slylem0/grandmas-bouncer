@@ -2,6 +2,7 @@
 
 **Pattern: #guardrails · Tags: #strands-decider-2b #guardrails #amazon-bedrock #ai-agents #security**
 **Code: https://github.com/Slylem0/grandmas-bouncer**
+**Demo video (2:24): https://youtu.be/OS2RwfqWgh8**
 
 ## The problem
 

@@ -41,6 +41,6 @@ Each task names its owner subagent (see `.claude/agents/`). Tick boxes as you go
 - [x] 5.1 `decider_patterns/README.md` recipe + `examples/minimal_guard.py` (< 40 lines, non-banking). _Req 10_
 - [x] 5.2 `README.md` final (diagram, quickstart, results table from summary.md). _Req 11.1_
 - [x] 5.3 `docs/article/article.md` for Builder Center. _Req 11.2_
-- [ ] 5.4 `docs/article/video-script.md` (< 3 min shot list) and record video. _Req 11.3_ (script done in `docs/article/video-script.md`; recording pending, Pablo)
+- [x] 5.4 `docs/article/video-script.md` (< 3 min shot list) and record video. _Req 11.3_ (script done in `docs/article/video-script.md`; recording pending, Pablo)
 - [x] 5.5 `reviewer` pass: requirements checklist, no invented numbers, no real brands/IBANs, tests green.
 - [ ] 5.6 LICENSE (Apache-2.0), push public repo `Slylem0/grandmas-bouncer`, publish article with tags, submit before 2026-10-23 23:59 PT. _Req 11.4_

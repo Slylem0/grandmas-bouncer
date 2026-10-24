@@ -39,3 +39,8 @@ Newest first. One entry per work session: what was done, numbers measured, block
 - Screenshots of a real run (L4) in `docs/img/`, hero image in README and article.
 - UI simplified after feedback ("less is more" for an elderly user): Carmen sees one screen with one main button, large text, no jargon, Sí/No buttons only after a yes/no question, and receipts from the ledger. Inbox, daughter phone and Bouncer probabilities moved to a demo view (`/?demo`).
 - Agent deny guidance now offers payment to the saved payee and forbids claiming unexecuted actions: an earlier wording made Nova 2 Lite claim a payment it never made. 4-run check: the agent took the bait in 3/4 runs, all 3 blocked, and in all 3 the follow-up "Sí" paid the saved payee.
+
+## 2026-10-23
+- Video recorded on the L4 setup (real run: add_payee blocked, destination trusted 0.34, decided in 581 ms client-side; real bill then paid to the saved payee). Edited with Remotion (cold open, provenance and benchmark animations, burned-in captions), 2:24, published: https://youtu.be/OS2RwfqWgh8. The "two no's" line was cut from the voice-over: in that run only one question came back unsafe.
+- Repo made public. Video link added to README and article.
+- Next: publish the article on Builder Center, submit before 23:59 PT, terminate the EC2 instance.

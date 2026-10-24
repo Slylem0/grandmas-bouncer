@@ -18,6 +18,8 @@ saved account. Carmen herself only sees the simple middle screen
 ([desktop](docs/img/carmen-view-blocked.png), [mobile](docs/img/carmen-view-mobile.png)); open
 `http://127.0.0.1:8000/?demo` for the panels around it.*
 
+**▶ Demo video (2:24): https://youtu.be/OS2RwfqWgh8**
+
 Built for the AWS Agent Experience Hackathon. Pattern: **#guardrails**. Tag: **#strands-decider-2b**.
 
 ## How it works
